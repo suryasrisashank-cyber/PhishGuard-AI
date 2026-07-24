@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  background-color: #020617;
+  color: #f8fafc;
+}
+
+:root{
+  --bg-1:#030617;
+  --bg-2:#071232;
+  --glass: rgba(255,255,255,0.03);
+  --neon-blue: #00c2ff;
+  --neon-green: #00ffa3;
+  --muted: #98a0b3;
+}
+
+.glass-card{
+  background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  border: 1px solid rgba(255,255,255,0.04);
+  box-shadow: 0 6px 20px rgba(2,6,23,0.6);
+}
+
+.neon-text{ color: var(--neon-blue); text-shadow: 0 4px 18px rgba(0,194,255,0.12) }
+.neon-accent{ color: var(--neon-green); }
+
+.fade-in{ animation: fadeIn 420ms ease both }
+@keyframes fadeIn{ from{ opacity:0; transform: translateY(6px)} to{opacity:1; transform:none} }
+
+/*. Simple responsive helpers */
+.container{ max-width:1200px; margin:0 auto; padding:20px }
+.header-row{ display:flex; align-items:center; justify-content:space-between; gap:12px }
+
+.rounded-lg{ border-radius:12px }
+.btn-primary{ background:linear-gradient(90deg,var(--neon-blue),#2de0ff); color:#001; padding:8px 14px; border-radius:10px; font-weight:600 }
+.btn-ghost{ background:transparent; border:1px solid rgba(255,255,255,0.04); padding:8px 12px; border-radius:10px }
+
+.badge-safe{ background: rgba(0,255,163,0.12); color:var(--neon-green); padding:6px 10px; border-radius:999px }
+.badge-suspicious{ background: rgba(255,160,20,0.08); color:#f59e0b; padding:6px 10px; border-radius:999px }
+.badge-malicious{ background: rgba(255,68,68,0.08); color:#ef4444; padding:6px 10px; border-radius:999px }
+
+.table-scroll{ overflow:auto; max-height:420px }
+.table th{ text-align:left; color:var(--muted); font-size:13px }
+.table td{ font-size:14px }
+
+/* Loading shimmer */
+.shimmer{ position:relative; overflow:hidden; background:linear-gradient(90deg, rgba(255,255,255,0.02) 25%, rgba(255,255,255,0.04) 50%, rgba(255,255,255,0.02) 75%); background-size:200% 100%; animation: shimmer 1.6s linear infinite }
+@keyframes shimmer{ from{ background-position:200% 0 } to{ background-position:-200% 0 } }
+
+@media (max-width:768px){
+  .header-row{ flex-direction:column; align-items:flex-start }
+  .container{ padding:12px }
+}

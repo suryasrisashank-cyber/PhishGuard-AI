@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>PhishGuard AI Pro – Static</title>
+    <style>
+      body { font-family: system-ui, sans-serif; background:#0f172a; color:#e6eef8; padding:24px }
+      .card { background:#0b1220; padding:16px; border-radius:8px; margin-bottom:12px }
+      input, select, button { padding:8px; border-radius:6px; border:1px solid #223; background:#071025; color:#e6eef8 }
+      table { width:100%; border-collapse:collapse }
+      th,td { text-align:left; padding:8px; border-bottom:1px solid #102036 }
+    </style>
+  </head>
+  <body>
+    <h1>PhishGuard AI Pro (Static)</h1>
+    <div class="card">
+      <h3>Quick Scan</h3>
+      <select id="type"><option value="url">URL</option><option value="website">Website</option></select>
+      <input id="target" placeholder="https://example.com" style="width:60%" />
+      <button id="scanBtn">Run Scan</button>
+      <p id="msg"></p>
+    </div>
+
+    <div class="card">
+      <h3>Dashboard Stats</h3>
+      <pre id="stats">Loading…</pre>
+    </div>
+
+    <div class="card">
+      <h3>Recent Scans</h3>
+      <table id="scansTable"><thead><tr><th>Type</th><th>Target</th><th>Verdict</th><th>Risk</th><th>Summary</th></tr></thead><tbody></tbody></table>
+    </div>
+
+    <script>
+      const API = 'http://127.0.0.1:8000/api';
+      async function fetchStats(){
+        const r = await fetch(API + '/dashboard/stats');
+        if(r.ok){ document.getElementById('stats').textContent = JSON.stringify(await r.json(), null, 2) }
+      }
+      async function fetchScans(){
+        const r = await fetch(API + '/scans');
+        if(r.ok){ const rows = await r.json(); const tbody = document.querySelector('#scansTable tbody'); tbody.innerHTML = ''; rows.forEach(s=>{ const tr=document.createElement('tr'); tr.innerHTML = `<td>${s.scan_type}</td><td>${s.target}</td><td>${s.verdict}</td><td>${s.risk_score}</td><td>${s.summary}</td>`; tbody.appendChild(tr) }) }
+      }
+      document.getElementById('scanBtn').addEventListener('click', async ()=>{
+        const type = document.getElementById('type').value;
+        const target = document.getElementById('target').value;
+        const msg = document.getElementById('msg');
+        if(!target) { msg.textContent = 'Enter a target.'; return }
+        try{
+          const payload = { scan_type: type, target };
+          const r = await fetch(API + '/scans/' + type, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+          if(r.ok){ msg.textContent = 'Scan complete'; fetchStats(); fetchScans(); } else { msg.textContent = 'Scan failed: ' + r.status }
+        }catch(e){ msg.textContent = 'Error: ' + e }
+      })
+      fetchStats(); fetchScans();
+    </script>
+  </body>
+</html>
