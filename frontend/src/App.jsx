@@ -7,7 +7,7 @@ import { VerdictPie, ScansBar } from './components/Charts';
 import ScansTable from './components/ScansTable';
 import LoadingSpinner from './components/LoadingSpinner';
 
-const API_URL = 'http://127.0.0.1:8000/api';
+const API_URL = 'https://phishguard-ai-6ngm.onrender.com/api';
 
 function ensureScheme(target){
   if(!target) return '';
