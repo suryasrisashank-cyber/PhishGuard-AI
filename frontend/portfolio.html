@@ -1,0 +1,2758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alla Surya Sri Sashank | AI & Cybersecurity SOC Specialist</title>
+  <meta name="description" content="Cyber Operations Center (SOC) Portfolio for Alla Surya Sri Sashank - Specialist in Artificial Intelligence, Cybersecurity, SIEM Threat Monitoring, Metasploit, & Python Security Automation." />
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ==========================================================================
+       ALLA SURYA SRI SASHANK - CYBER OPERATIONS CENTER (SOC) DESIGN SYSTEM
+       Theme: Pure Dark (hsl(0 0% 3%)), Neon Green (#00FF66), Electric Cyan (#00F0FF),
+       Deep Warning Purple (#9D00FF).
+       ========================================================================== */
+
+    @property --gradient-angle {
+      syntax: "<angle>";
+      initial-value: 0deg;
+      inherits: false;
+    }
+
+    :root {
+      /* Color Tokens */
+      --bg-dark: hsl(0, 0%, 3%);
+      --bg-darker: hsl(0, 0%, 1.5%);
+      --bg-card: rgba(12, 16, 20, 0.85);
+      --bg-glass: rgba(8, 12, 16, 0.75);
+      
+      --neon-green: #00FF66;
+      --neon-green-glow: rgba(0, 255, 102, 0.35);
+      --electric-cyan: #00F0FF;
+      --electric-cyan-glow: rgba(0, 240, 255, 0.35);
+      --warning-purple: #9D00FF;
+      --warning-purple-glow: rgba(157, 0, 255, 0.35);
+      --alert-red: #FF0055;
+      --alert-amber: #FFB800;
+
+      --text-main: #E2E8F0;
+      --text-muted: #8892B0;
+      --text-dim: #4A5568;
+
+      --border-dark: rgba(0, 255, 102, 0.2);
+      --border-cyan: rgba(0, 240, 255, 0.25);
+      --border-purple: rgba(157, 0, 255, 0.25);
+
+      /* Fonts */
+      --font-mono: 'Share Tech Mono', 'JetBrains Mono', monospace;
+      --font-code: 'JetBrains Mono', monospace;
+      --font-sans: 'Outfit', sans-serif;
+
+      /* Transitions */
+      --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Reset & Global */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      overflow-x: hidden;
+    }
+
+    body {
+      min-height: 100vh;
+      position: relative;
+      background: radial-gradient(circle at 50% 20%, rgba(0, 240, 255, 0.03) 0%, transparent 60%),
+                  radial-gradient(circle at 80% 80%, rgba(157, 0, 255, 0.03) 0%, transparent 50%),
+                  var(--bg-dark);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-darker);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 255, 102, 0.3);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--neon-green);
+    }
+
+    /* Helper Classes */
+    .txt-green { color: var(--neon-green); }
+    .txt-cyan { color: var(--electric-cyan); }
+    .txt-purple { color: var(--warning-purple); }
+    .txt-red { color: var(--alert-red); }
+    .txt-amber { color: var(--alert-amber); }
+
+    .bg-green { background-color: var(--neon-green); }
+    .bg-cyan { background-color: var(--electric-cyan); }
+    .bg-purple { background-color: var(--warning-purple); }
+
+    /* Canvases */
+    .canvas-matrix {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.07;
+    }
+
+    .canvas-radar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Boot-Up Preloader Overlay */
+    .preloader {
+      position: fixed;
+      inset: 0;
+      background: #030508;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      transition: opacity 0.5s var(--ease-smooth), visibility 0.5s;
+    }
+
+    .preloader.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .preloader-content {
+      width: 90%;
+      max-width: 560px;
+      background: rgba(10, 15, 20, 0.95);
+      border: 1px solid var(--border-dark);
+      box-shadow: 0 0 35px rgba(0, 255, 102, 0.15);
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+
+    .terminal-header-mini {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .dot.red { background: #FF5F56; }
+    .dot.yellow { background: #FFBD2E; }
+    .dot.green { background: #27C93F; }
+
+    .terminal-title-mini {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-left: auto;
+    }
+
+    .boot-logs {
+      height: 140px;
+      overflow-y: auto;
+      font-size: 0.8rem;
+      color: var(--neon-green);
+      line-height: 1.6;
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 4px;
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+    }
+
+    .progress-bar-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--electric-cyan), var(--neon-green));
+      box-shadow: 0 0 10px var(--neon-green);
+      transition: width 0.1s linear;
+    }
+
+    .boot-percentage {
+      text-align: right;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: var(--neon-green);
+    }
+
+    .boot-status {
+      font-size: 0.8rem;
+      color: var(--electric-cyan);
+    }
+
+    /* Top Nav Bar */
+    .soc-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(3, 5, 8, 0.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-dark);
+    }
+
+    .nav-container {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 0.85rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-decoration: none;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: #FFF;
+      letter-spacing: 1px;
+    }
+
+    .brand-highlight { color: var(--neon-green); }
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      position: relative;
+    }
+    .status-indicator.online {
+      background-color: var(--neon-green);
+      box-shadow: 0 0 8px var(--neon-green);
+    }
+    .status-indicator.online::after {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 50%;
+      border: 1px solid var(--neon-green);
+      animation: pulse-ring 2s infinite;
+    }
+
+    @keyframes pulse-ring {
+      0% { transform: scale(0.8); opacity: 1; }
+      100% { transform: scale(2.2); opacity: 0; }
+    }
+
+    .telemetry-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(0, 255, 102, 0.2);
+      border-radius: 20px;
+      padding: 0.35rem 0.9rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+    }
+
+    .pill-item .label { color: var(--text-muted); }
+    .pill-item .val { font-weight: bold; }
+    .pill-divider { color: rgba(255, 255, 255, 0.2); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .nav-link {
+      text-decoration: none;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.5px;
+      transition: color 0.3s;
+    }
+
+    .nav-link:hover {
+      color: var(--neon-green);
+      text-shadow: 0 0 8px var(--neon-green-glow);
+    }
+
+    .nav-num { color: var(--electric-cyan); }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Cyber Buttons */
+    .cyber-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background: rgba(0, 255, 102, 0.05);
+      border: 1px solid var(--neon-green);
+      color: var(--neon-green);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      padding: 0.6rem 1.25rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.3s var(--ease-smooth);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .cyber-btn:hover {
+      background: var(--neon-green);
+      color: #000;
+      box-shadow: 0 0 20px var(--neon-green-glow);
+    }
+
+    .cyber-btn.primary-btn {
+      background: var(--neon-green);
+      color: #000;
+      font-weight: 700;
+    }
+    .cyber-btn.primary-btn:hover {
+      background: #00CC52;
+      box-shadow: 0 0 25px var(--neon-green);
+    }
+
+    .cyber-btn.secondary-btn {
+      border-color: var(--electric-cyan);
+      color: var(--electric-cyan);
+      background: rgba(0, 240, 255, 0.05);
+    }
+    .cyber-btn.secondary-btn:hover {
+      background: var(--electric-cyan);
+      color: #000;
+      box-shadow: 0 0 20px var(--electric-cyan-glow);
+    }
+
+    .cyber-btn.outline-btn {
+      border-color: var(--warning-purple);
+      color: var(--warning-purple);
+      background: rgba(157, 0, 255, 0.05);
+    }
+    .cyber-btn.outline-btn:hover {
+      background: var(--warning-purple);
+      color: #FFF;
+      box-shadow: 0 0 20px var(--warning-purple-glow);
+    }
+
+    .cyber-btn.mini-btn {
+      padding: 0.4rem 0.85rem;
+      font-size: 0.75rem;
+    }
+
+    .cyber-btn.icon-btn {
+      padding: 0.4rem 0.6rem;
+      font-size: 1rem;
+    }
+
+    .cyber-btn.danger-btn {
+      border-color: var(--alert-red);
+      color: var(--alert-red);
+    }
+    .cyber-btn.danger-btn:hover {
+      background: var(--alert-red);
+      color: #FFF;
+    }
+
+    .cyber-btn.warning-btn {
+      border-color: var(--alert-amber);
+      color: var(--alert-amber);
+    }
+    .cyber-btn.warning-btn:hover {
+      background: var(--alert-amber);
+      color: #000;
+    }
+
+    .full-width { width: 100%; }
+
+    /* Header Glitch Text Effect */
+    .glitch-header {
+      position: relative;
+      display: inline-block;
+      color: #FFF;
+    }
+
+    .glitch-header::before,
+    .glitch-header::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .glitch-header:hover::before {
+      left: 2px;
+      text-shadow: -2px 0 var(--alert-red);
+      clip: rect(24px, 550px, 90px, 0);
+      animation: glitch-anim-1 0.4s linear infinite alternate-reverse;
+      opacity: 0.9;
+    }
+
+    .glitch-header:hover::after {
+      left: -2px;
+      text-shadow: -2px 0 var(--electric-cyan);
+      clip: rect(85px, 550px, 140px, 0);
+      animation: glitch-anim-2 0.3s linear infinite alternate-reverse;
+      opacity: 0.9;
+    }
+
+    @keyframes glitch-anim-1 {
+      0% { clip: rect(10px, 9999px, 30px, 0); transform: skew(0.3deg); }
+      50% { clip: rect(40px, 9999px, 80px, 0); transform: skew(-0.5deg); }
+      100% { clip: rect(70px, 9999px, 110px, 0); transform: skew(0.2deg); }
+    }
+
+    @keyframes glitch-anim-2 {
+      0% { clip: rect(60px, 9999px, 90px, 0); transform: skew(-0.4deg); }
+      50% { clip: rect(15px, 9999px, 50px, 0); transform: skew(0.6deg); }
+      100% { clip: rect(80px, 9999px, 120px, 0); transform: skew(-0.1deg); }
+    }
+
+    /* Sections Global */
+    .main-wrapper {
+      position: relative;
+      z-index: 2;
+    }
+
+    .section-container {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 6rem 1.5rem 2rem 1.5rem;
+    }
+
+    .section-header {
+      margin-bottom: 3rem;
+      position: relative;
+    }
+
+    .section-tag {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--neon-green);
+      letter-spacing: 1px;
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    .section-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .header-line {
+      width: 80px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--neon-green), transparent);
+      margin-top: 0.75rem;
+    }
+
+    /* Hero Section */
+    .hero-section {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7rem 1.5rem 4rem 1.5rem;
+      overflow: hidden;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 3;
+      max-width: 900px;
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(0, 240, 255, 0.08);
+      border: 1px solid var(--border-cyan);
+      border-radius: 30px;
+      padding: 0.4rem 1rem;
+      margin-bottom: 1.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--electric-cyan);
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--electric-cyan);
+      box-shadow: 0 0 6px var(--electric-cyan);
+    }
+
+    .hero-section .main-title {
+      font-size: clamp(2.2rem, 5vw, 4.2rem);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 1.25rem;
+      letter-spacing: -1px;
+    }
+
+    .hero-subtext {
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      color: var(--text-muted);
+      line-height: 1.7;
+      max-width: 780px;
+      margin: 0 auto 2.5rem auto;
+    }
+
+    .hero-telemetry-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .telem-card {
+      background: rgba(10, 15, 22, 0.7);
+      border: 1px solid rgba(0, 255, 102, 0.12);
+      border-radius: 8px;
+      padding: 1rem;
+      backdrop-filter: blur(10px);
+      transition: transform 0.3s, border-color 0.3s;
+    }
+
+    .telem-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--neon-green);
+    }
+
+    .telem-value {
+      font-family: var(--font-mono);
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 0.2rem;
+    }
+
+    .telem-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .hero-cta-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    /* Terminal Frames UI */
+    .terminal-window {
+      background: var(--bg-card);
+      border: 1px solid var(--border-dark);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(14px);
+    }
+
+    .terminal-bar {
+      background: rgba(15, 20, 28, 0.95);
+      padding: 0.6rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .terminal-bar .controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .control {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    .control.close { background: #FF5F56; }
+    .control.minimize { background: #FFBD2E; }
+    .control.maximize { background: #27C93F; }
+
+    .terminal-title {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+
+    .terminal-meta {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-dim);
+    }
+
+    .terminal-body {
+      padding: 1.5rem;
+      font-family: var(--font-code);
+    }
+
+    /* Code Highlighting */
+    .code-line {
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: #CBD5E0;
+    }
+
+    .c-purple { color: #C678DD; }
+    .c-green { color: var(--neon-green); }
+    .c-cyan { color: var(--electric-cyan); }
+    .c-yellow { color: #E5C07B; }
+
+    .indent { padding-left: 1.5rem; }
+    .indent-2 { padding-left: 3rem; }
+    .indent-3 { padding-left: 4.5rem; }
+
+    /* About Section */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    .about-highlights {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .glass-card {
+      background: var(--bg-glass);
+      border: 1px solid var(--border-dark);
+      border-radius: 10px;
+      padding: 1.5rem;
+      backdrop-filter: blur(12px);
+      transition: all 0.3s var(--ease-smooth);
+    }
+
+    .highlight-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .highlight-box:hover {
+      border-color: var(--electric-cyan);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
+      transform: translateX(4px);
+    }
+
+    .box-icon {
+      font-size: 1.75rem;
+      line-height: 1;
+    }
+
+    .box-content h3 {
+      font-size: 1.1rem;
+      color: #FFF;
+      margin-bottom: 0.4rem;
+    }
+
+    .box-content p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Skills Section */
+    .skills-nav-tabs {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      background: rgba(10, 15, 22, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s;
+    }
+
+    .tab-btn .tab-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text-dim);
+    }
+
+    .tab-btn:hover,
+    .tab-btn.active {
+      border-color: var(--neon-green);
+      color: var(--neon-green);
+      background: rgba(0, 255, 102, 0.08);
+    }
+
+    .tab-btn.active .tab-dot {
+      background: var(--neon-green);
+      box-shadow: 0 0 6px var(--neon-green);
+    }
+
+    .tab-pane { display: none; }
+    .tab-pane.active {
+      display: block;
+      animation: fadeIn 0.4s var(--ease-smooth);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .skills-matrix-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .skill-meter-card {
+      background: rgba(5, 8, 12, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      padding: 1.25rem;
+      transition: border-color 0.3s;
+    }
+
+    .skill-meter-card:hover { border-color: var(--electric-cyan); }
+
+    .skill-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.6rem;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+    }
+
+    .skill-name { color: #FFF; font-weight: 600; }
+    .skill-perc { font-weight: 700; }
+
+    .meter-bar {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 0.6rem;
+    }
+
+    .meter-bar .fill {
+      height: 100%;
+      border-radius: 3px;
+      box-shadow: 0 0 8px currentColor;
+      transition: width 1s var(--ease-smooth);
+    }
+
+    .skill-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* Projects & Border Trace */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+      gap: 2rem;
+    }
+
+    .project-card {
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #000;
+      transition: transform 0.3s var(--ease-smooth);
+    }
+
+    .trace-border-card {
+      position: relative;
+      padding: 2px;
+      border-radius: 10px;
+      background: rgba(0, 255, 102, 0.1);
+      overflow: hidden;
+    }
+
+    .trace-border-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: conic-gradient(
+        from var(--gradient-angle),
+        transparent 0%,
+        transparent 70%,
+        var(--neon-green) 85%,
+        var(--electric-cyan) 100%
+      );
+      animation: rotation 4s linear infinite;
+      opacity: 0;
+      transition: opacity 0.4s var(--ease-smooth);
+    }
+
+    .trace-border-card:hover::before { opacity: 1; }
+    .trace-border-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 35px rgba(0, 255, 102, 0.2);
+    }
+
+    @keyframes rotation {
+      0% { --gradient-angle: 0deg; }
+      100% { --gradient-angle: 360deg; }
+    }
+
+    .project-inner {
+      height: 100%;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .project-content {
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+
+    .project-tags {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .p-tag {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+    }
+
+    .tag-green { background: rgba(0, 255, 102, 0.1); border: 1px solid var(--border-dark); color: var(--neon-green); }
+    .tag-cyan { background: rgba(0, 240, 255, 0.1); border: 1px solid var(--border-cyan); color: var(--electric-cyan); }
+    .tag-purple { background: rgba(157, 0, 255, 0.1); border: 1px solid var(--border-purple); color: var(--warning-purple); }
+
+    .project-title {
+      font-size: 1.25rem;
+      color: #FFF;
+      margin-bottom: 0.75rem;
+      line-height: 1.3;
+    }
+
+    .project-desc {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+      flex-grow: 1;
+    }
+
+    .project-specs {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px dashed rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 0.75rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+    }
+
+    .spec-item { display: flex; justify-content: space-between; }
+    .spec-label { color: var(--text-dim); }
+
+    .project-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .link-btn {
+      color: var(--electric-cyan);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .link-btn:hover { color: var(--neon-green); text-decoration: underline; }
+
+    .badge-status {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 3px;
+      font-weight: bold;
+    }
+    .badge-status.online {
+      background: rgba(0, 255, 102, 0.15);
+      color: var(--neon-green);
+      border: 1px solid var(--border-dark);
+    }
+
+    /* Certifications 3D Tilt */
+    .certs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.75rem;
+    }
+
+    .cert-card {
+      position: relative;
+      border-radius: 12px;
+      padding: 1.75rem;
+      background: var(--bg-glass);
+      border: 1px solid var(--border-dark);
+      backdrop-filter: blur(16px);
+      transform-style: preserve-3d;
+      transition: transform 0.15s ease-out, border-color 0.3s;
+      overflow: hidden;
+    }
+
+    .cert-card:hover {
+      border-color: var(--electric-cyan);
+      box-shadow: 0 15px 35px rgba(0, 240, 255, 0.15);
+    }
+
+    .cert-shine {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .cert-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .cert-badge-icon { font-size: 1.8rem; }
+    .cert-issuer {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+
+    .cert-title {
+      font-size: 1.15rem;
+      color: #FFF;
+      margin-bottom: 0.75rem;
+    }
+
+    .cert-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 1.5rem;
+    }
+
+    .cert-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 0.75rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+    }
+
+    .cert-id { color: var(--text-dim); }
+    .cert-status.verified { color: var(--neon-green); font-weight: 700; }
+
+    /* SOC Threat Simulator */
+    .simulator-terminal { border-color: var(--border-cyan); }
+
+    .defcon-badge {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    .defcon-badge.green { background: rgba(0, 255, 102, 0.2); color: var(--neon-green); }
+    .defcon-badge.amber { background: rgba(255, 184, 0, 0.2); color: var(--alert-amber); }
+    .defcon-badge.red { background: rgba(255, 0, 85, 0.2); color: var(--alert-red); }
+
+    .simulator-body {
+      padding: 1rem;
+      background: rgba(3, 5, 8, 0.9);
+    }
+
+    .sim-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 1rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .sim-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .sim-counters {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      display: flex;
+      gap: 1rem;
+    }
+
+    .sim-log-feed {
+      height: 220px;
+      overflow-y: auto;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      padding: 0.5rem;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 4px;
+    }
+
+    .log-row {
+      line-height: 1.5;
+      border-left: 2px solid transparent;
+      padding-left: 0.5rem;
+      animation: slideIn 0.2s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-5px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .log-row.info { border-color: var(--electric-cyan); color: #CBD5E0; }
+    .log-row.warn { border-color: var(--alert-amber); color: var(--alert-amber); }
+    .log-row.danger { border-color: var(--alert-red); color: var(--alert-red); }
+    .log-row.success { border-color: var(--neon-green); color: var(--neon-green); }
+
+    .log-row .time { color: var(--text-dim); }
+    .log-row .tag { font-weight: bold; margin-right: 0.4rem; }
+
+    /* Command CLI */
+    .cli-terminal { border-color: var(--border-purple); }
+
+    .cli-body {
+      height: 240px;
+      overflow-y: auto;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      line-height: 1.6;
+      background: rgba(2, 4, 7, 0.95);
+    }
+
+    .cli-input-line {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1.5rem;
+      background: rgba(10, 15, 22, 0.95);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      font-family: var(--font-code);
+    }
+
+    .cli-input-line .prompt {
+      color: var(--neon-green);
+      font-weight: 700;
+      margin-right: 0.75rem;
+      white-space: nowrap;
+    }
+
+    .cli-input-line input {
+      flex-grow: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #FFF;
+      font-family: var(--font-code);
+      font-size: 0.9rem;
+    }
+
+    /* Contact Section */
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .form-label {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--electric-cyan);
+      letter-spacing: 0.5px;
+    }
+
+    .cyber-input {
+      background: rgba(5, 8, 12, 0.8);
+      border: 1px solid rgba(0, 255, 102, 0.2);
+      border-radius: 4px;
+      padding: 0.75rem 1rem;
+      color: #FFF;
+      font-family: var(--font-code);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .cyber-input:focus {
+      border-color: var(--neon-green);
+      box-shadow: 0 0 12px var(--neon-green-glow);
+    }
+
+    .contact-status {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+
+    .meta-card {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .meta-title {
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      letter-spacing: 0.5px;
+    }
+
+    .meta-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .comm-channel {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .chan-icon { font-size: 1.25rem; }
+
+    .chan-info { display: flex; flex-direction: column; }
+    .chan-label { font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-dim); }
+    .chan-val { font-family: var(--font-mono); font-size: 0.8rem; color: var(--electric-cyan); }
+
+    .social-cyber-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .cyber-social-link {
+      background: rgba(0, 240, 255, 0.05);
+      border: 1px solid var(--border-cyan);
+      color: var(--electric-cyan);
+      padding: 0.5rem;
+      border-radius: 4px;
+      text-align: center;
+      text-decoration: none;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      transition: all 0.3s;
+    }
+
+    .cyber-social-link:hover {
+      background: var(--electric-cyan);
+      color: #000;
+      box-shadow: 0 0 15px var(--electric-cyan-glow);
+    }
+
+    /* Footer */
+    .soc-footer {
+      border-top: 1px solid var(--border-dark);
+      background: rgba(2, 4, 6, 0.98);
+      padding: 1.5rem 0;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      position: relative;
+      z-index: 10;
+    }
+
+    .footer-container {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .footer-left { display: flex; align-items: center; gap: 0.6rem; }
+    .footer-right .divider { margin: 0 0.5rem; color: var(--text-dim); }
+
+    /* Modal Backdrop */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0, 0, 0, 0.88);
+      backdrop-filter: blur(12px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s var(--ease-smooth);
+    }
+
+    .modal-backdrop.active {
+      display: flex;
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-terminal {
+      width: 100%;
+      max-width: 750px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-body {
+      overflow-y: auto;
+      max-height: 70vh;
+    }
+
+    /* Mobile Drawer */
+    .mobile-drawer {
+      position: fixed;
+      top: 60px;
+      left: 0;
+      right: 0;
+      background: rgba(5, 8, 12, 0.98);
+      border-bottom: 1px solid var(--neon-green);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      z-index: 99;
+      transform: translateY(-120%);
+      transition: transform 0.3s var(--ease-smooth);
+    }
+
+    .mobile-drawer.open { transform: translateY(0); }
+
+    .mobile-link {
+      color: #FFF;
+      text-decoration: none;
+      font-family: var(--font-mono);
+      font-size: 1rem;
+    }
+
+    .desktop-only { display: flex; }
+    .mobile-only { display: none; }
+
+    @media (max-width: 900px) {
+      .desktop-only { display: none !important; }
+      .mobile-only { display: inline-flex !important; }
+      .about-grid, .contact-grid { grid-template-columns: 1fr; }
+      .projects-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 600px) {
+      .section-container { padding-top: 4.5rem; }
+      .hero-telemetry-grid { grid-template-columns: repeat(2, 1fr); }
+      .sim-toolbar { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Boot-up Preloader -->
+  <div id="preloader" class="preloader">
+    <div class="preloader-content">
+      <div class="terminal-header-mini">
+        <span class="dot red"></span>
+        <span class="dot yellow"></span>
+        <span class="dot green"></span>
+        <span class="terminal-title-mini">SYSTEM_BOOT_V4.0.8 // AGY-SOC</span>
+      </div>
+      <div class="boot-logs" id="bootLogs"></div>
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="progressBarFill"></div>
+      </div>
+      <div class="boot-percentage" id="bootPercentage">0%</div>
+      <div class="boot-status" id="bootStatus">INITIALIZING SOC KERNEL...</div>
+    </div>
+  </div>
+
+  <!-- Background Canvases -->
+  <canvas id="matrixCanvas" class="canvas-matrix"></canvas>
+  
+  <!-- Top Navigation Bar -->
+  <header class="soc-nav">
+    <div class="nav-container">
+      <a href="#hero" class="brand-logo">
+        <span class="status-indicator online"></span>
+        <span class="brand-text">SASHANK<span class="brand-highlight">.SOC</span></span>
+      </a>
+
+      <div class="telemetry-pill desktop-only">
+        <span class="pill-item"><span class="label">DEFCON:</span> <span id="navDefcon" class="val green">DEFCON 1</span></span>
+        <span class="pill-divider">|</span>
+        <span class="pill-item"><span class="label">LATENCY:</span> <span id="navPing" class="val cyan">14ms</span></span>
+        <span class="pill-divider">|</span>
+        <span class="pill-item"><span class="label">ENCRYPTION:</span> <span class="val purple">AES-256-GCM</span></span>
+      </div>
+
+      <nav class="nav-links">
+        <a href="#about" class="nav-link"><span class="nav-num">01.</span> ABOUT</a>
+        <a href="#skills" class="nav-link"><span class="nav-num">02.</span> SKILLS</a>
+        <a href="#projects" class="nav-link"><span class="nav-num">03.</span> PROJECTS</a>
+        <a href="#certifications" class="nav-link"><span class="nav-num">04.</span> CERTS</a>
+        <a href="#soc-simulator" class="nav-link"><span class="nav-num">05.</span> SIMULATOR</a>
+        <a href="#contact" class="nav-link"><span class="nav-num">06.</span> CONTACT</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button id="audioToggle" class="cyber-btn icon-btn" title="Toggle System Sound FX">
+          <span id="audioIcon">🔊</span>
+        </button>
+        <button id="mobileMenuBtn" class="cyber-btn icon-btn mobile-only">
+          ☰
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div id="mobileDrawer" class="mobile-drawer">
+    <a href="#about" class="mobile-link">01. ABOUT</a>
+    <a href="#skills" class="mobile-link">02. SKILLS</a>
+    <a href="#projects" class="mobile-link">03. PROJECTS</a>
+    <a href="#certifications" class="mobile-link">04. CERTS</a>
+    <a href="#soc-simulator" class="mobile-link">05. SIMULATOR</a>
+    <a href="#contact" class="mobile-link">06. CONTACT</a>
+  </div>
+
+  <main class="main-wrapper">
+
+    <!-- HERO SECTION WITH RADAR CANVAS -->
+    <section id="hero" class="hero-section">
+      <canvas id="radarCanvas" class="canvas-radar"></canvas>
+
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="pulse-dot"></span>
+          <span class="badge-text">CYBERSECURITY & AI SPECIALIST // SOC OPERATIONS</span>
+        </div>
+
+        <h1 class="glitch-header main-title" data-text="ALLA SURYA SRI SASHANK">
+          ALLA SURYA SRI SASHANK
+        </h1>
+
+        <p class="hero-subtext">
+          Architecting resilient digital perimeters through <span class="txt-cyan">Artificial Intelligence</span>, 
+          real-time <span class="txt-green">SIEM Threat Telemetry</span>, automated <span class="txt-purple">Metasploit Audit Frameworks</span>, 
+          and advanced <span class="txt-green">Python Anomaly Detection</span>.
+        </p>
+
+        <!-- Quick Telemetry Counters -->
+        <div class="hero-telemetry-grid">
+          <div class="telem-card">
+            <div class="telem-value txt-green">99.98%</div>
+            <div class="telem-label">AI Anomaly Accuracy</div>
+          </div>
+          <div class="telem-card">
+            <div class="telem-value txt-cyan">100+</div>
+            <div class="telem-label">SIEM Rules Engineered</div>
+          </div>
+          <div class="telem-card">
+            <div class="telem-value txt-purple">0-DAY</div>
+            <div class="telem-label">Vulnerability Mitigation</div>
+          </div>
+          <div class="telem-card">
+            <div class="telem-value txt-green">24 / 7</div>
+            <div class="telem-label">Threat Telemetry Active</div>
+          </div>
+        </div>
+
+        <div class="hero-cta-group">
+          <a href="#projects" class="cyber-btn primary-btn">
+            <span class="btn-text">EXPLORE PROJECTS</span>
+            <span class="btn-arrow">→</span>
+          </a>
+          <a href="#contact" class="cyber-btn secondary-btn">
+            <span class="btn-text">INITIATE DISPATCH</span>
+          </a>
+          <a href="#terminal-cli" class="cyber-btn outline-btn">
+            <span class="btn-text">LAUNCH CLI</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT SECTION -->
+    <section id="about" class="section-container">
+      <div class="section-header">
+        <span class="section-tag">[ SECTION 01 ]</span>
+        <h2 class="glitch-header section-title" data-text="OPERATIONAL OVERVIEW">OPERATIONAL OVERVIEW</h2>
+        <div class="header-line"></div>
+      </div>
+
+      <div class="about-grid">
+        <div class="terminal-window bio-terminal">
+          <div class="terminal-bar">
+            <div class="controls">
+              <span class="control close"></span>
+              <span class="control minimize"></span>
+              <span class="control maximize"></span>
+            </div>
+            <div class="terminal-title">operator_profile.py - AGY-SOC</div>
+            <div class="terminal-meta">UTF-8</div>
+          </div>
+          <div class="terminal-body">
+            <p class="code-line"><span class="c-purple">import</span> security_core <span class="c-purple">as</span> soc</p>
+            <p class="code-line"><span class="c-purple">import</span> ai_anomaly_engine <span class="c-purple">as</span> ai</p>
+            <br />
+            <p class="code-line"><span class="c-green">class</span> <span class="c-cyan">Operator</span>:</p>
+            <p class="code-line indent">def __init__(self):</p>
+            <p class="code-line indent-2">self.name = <span class="c-yellow">"Alla Surya Sri Sashank"</span></p>
+            <p class="code-line indent-2">self.focus = [<span class="c-yellow">"Cybersecurity"</span>, <span class="c-yellow">"Artificial Intelligence"</span>, <span class="c-yellow">"SOC Operations"</span>]</p>
+            <p class="code-line indent-2">self.siem_tools = [<span class="c-yellow">"Splunk"</span>, <span class="c-yellow">"ELK Stack"</span>, <span class="c-yellow">"Snort IDS"</span>]</p>
+            <p class="code-line indent-2">self.offensive_tools = [<span class="c-yellow">"Metasploit"</span>, <span class="c-yellow">"Nmap"</span>, <span class="c-yellow">"Wireshark"</span>]</p>
+            <p class="code-line indent-2">self.dev_stack = [<span class="c-yellow">"Python"</span>, <span class="c-yellow">"Scikit-Learn"</span>, <span class="c-yellow">"Bash"</span>, <span class="c-yellow">"SQL"</span>]</p>
+            <br />
+            <p class="code-line indent">def mission_statement(self):</p>
+            <p class="code-line indent-2"><span class="c-purple">return</span> (</p>
+            <p class="code-line indent-3"><span class="c-yellow">"To merge high-speed Artificial Intelligence with rigorous SOC telemetry, "</span></p>
+            <p class="code-line indent-3"><span class="c-yellow">"enabling proactive intrusion prevention, automated threat hunting, and "</span></p>
+            <p class="code-line indent-3"><span class="c-yellow">"zero-trust architecture for global security infrastructure."</span></p>
+            <p class="code-line indent-2">)</p>
+          </div>
+        </div>
+
+        <div class="about-highlights">
+          <div class="glass-card highlight-box">
+            <div class="box-icon txt-green">🛡️</div>
+            <div class="box-content">
+              <h3>SOC Monitoring & SIEM Operations</h3>
+              <p>Expertise in configuring enterprise Splunk dashboards, rule ingestion pipelines, real-time intrusion monitoring, and log correlation to isolate suspicious activity before escalations.</p>
+            </div>
+          </div>
+
+          <div class="glass-card highlight-box">
+            <div class="box-icon txt-cyan">🤖</div>
+            <div class="box-content">
+              <h3>AI-Driven Threat Intelligence</h3>
+              <p>Building predictive Python models for unsupervised network anomaly detection, automated payload analysis, and intelligent security advisory chatbots.</p>
+            </div>
+          </div>
+
+          <div class="glass-card highlight-box">
+            <div class="box-icon txt-purple">⚔️</div>
+            <div class="box-content">
+              <h3>Ethical Hacking & Vulnerability Assessment</h3>
+              <p>Conducting systematic subnet vulnerability scans with Nmap and Metasploit automation scripts to locate zero-day weaknesses and recommend ironclad mitigation controls.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TECHNICAL SKILLS SECTION -->
+    <section id="skills" class="section-container">
+      <div class="section-header">
+        <span class="section-tag">[ SECTION 02 ]</span>
+        <h2 class="glitch-header section-title" data-text="TECHNICAL ARSENAL">TECHNICAL ARSENAL</h2>
+        <div class="header-line"></div>
+      </div>
+
+      <div class="skills-wrapper">
+        <div class="skills-nav-tabs" id="skillsTabs">
+          <button class="tab-btn active" data-target="soc-tab">
+            <span class="tab-dot"></span> SOC & SIEM
+          </button>
+          <button class="tab-btn" data-target="sec-tab">
+            <span class="tab-dot"></span> ETHICAL HACKING
+          </button>
+          <button class="tab-btn" data-target="ai-tab">
+            <span class="tab-dot"></span> AI & PYTHON
+          </button>
+          <button class="tab-btn" data-target="net-tab">
+            <span class="tab-dot"></span> NETWORK & SYSTEMS
+          </button>
+        </div>
+
+        <div class="terminal-window skills-terminal">
+          <div class="terminal-bar">
+            <div class="controls">
+              <span class="control close"></span>
+              <span class="control minimize"></span>
+              <span class="control maximize"></span>
+            </div>
+            <div class="terminal-title" id="skillsTermTitle">soc_operations_matrix.json</div>
+            <div class="terminal-meta">SYS_STATUS: ACTIVE</div>
+          </div>
+
+          <div class="terminal-body skills-content">
+            <!-- TAB 1: SOC & SIEM -->
+            <div id="soc-tab" class="tab-pane active">
+              <div class="skills-matrix-grid">
+                <div class="skill-meter-card">
+                  <div class="skill-head">
+                    <span class="skill-name">Splunk SIEM Enterprise</span>
+                    <span class="skill-perc txt-green">95%</span>
+                  </div>
+                  <div class="meter-bar"><div class="fill bg-green" style="width: 95%"></div></div>
+                  <p class="skill-desc">SPL Queries, Data Ingestion, Dashboard Design, Alert Threshold Engineering.</p>
+                </div>
+
+                <div class="skill-meter-card">
+                  <div class="skill-head">
+                    <span class="skill-name">SOC Incident Response</span>
+                    <span class="skill-perc txt-cyan">92%</span>
+                  </div>
+                  <div class="meter-bar"><div class="fill bg-cyan" style="width: 92%"></div></div>
+                  <p class="skill-desc">Level-1 & Level-2 Incident Triage, Artifact Isolation, Memory Analysis, Playbooks.</p>
+                </div>
+
+                <div class="skill-meter-card">
+                  <div class="skill-head">
+                    <span class="skill-name">Snort IDS / IPS Telemetry</span>
+                    <span class="skill-perc txt-purple">90%</span>
+                  </div>
+                  <div class="meter-bar"><div class="fill bg-purple" style="width: 90%"></div></div>
+                  <p class="skill-desc">Signature Rule Writing, Packet Inspection, Malicious Traffic Filtering.</p>
+                </div>
+
+                <div class="skill-meter-card">
+                  <div class="skill-head">
+                    <span class="skill-name">ELK Log Aggregation</span>
+                    <span class="skill-perc txt-green">88%</span>
+                  </div>
+                  <div class="meter-bar"><div class="fill bg-green" style="width: 88%"></div></div>
+                  <p class="skill-desc">Elasticsearch, Logstash, Kibana Pipelines, Syslog Normalization.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 2: ETHICAL HACKING -->
+            <div id="sec-tab" class="tab-pane">
+              <div class="skills-matrix-grid">
+                <div class="skill-meter-card">
+                  <div class="skill-head">
+                    <span class="skill-name">Metasploit Framework</span>
+                    <span class="skill-perc txt-green">92%</span>
+                  </div>
+                  <div class="meter-bar"><div class="fill bg-green" style="width: 92%"></div></div>
+                  <p class="skill-desc">Exploit Automation, Payload Generation, Auxiliary Scanning, MSFRPC API.</p>
+                </div>
+
+                <div class="skill-meter-card">
+                  <div class="skill-head">
+                    <span class="skill-name">Nmap & Subnet Auditing</span>
+                    <span class="skill-perc txt-cyan">95%</span>
+                  </div>
+                  <div class="meter-bar"><div class="fill bg-cyan" style="width: 95%"></div></div>
+                  <p class="skill-desc">NSE Scripting, Port Fingerprinting, Firewall Evasion, Service Discovery.</p>
+                </div>
+
+                <div class="skill-meter-card">
+                  <div class="skill-head">
+                    <span class="skill-name">Wireshark & Packet Triage</span>
+                    <span class="skill-perc txt-purple">94%</span>
+                  </div>
+                  <div class="meter-bar"><div class="fill bg-purple" style="width: 94%"></div></div>
+                  <p class="skill-desc">PCAP Analysis, TCP Stream Rebuilding, Malicious Handshake Identification.</p>
+                </div>
+
+                <div class="skill-meter-card">
+                  <div class="skill-head">
+                    <span class="skill-name">Vulnerability Assessment</span>
+                    <span class="skill-perc txt-green">90%</span>
+                  </div>
+                  <div class="meter-bar"><div class="fill bg-green" style="width: 90%"></div></div>
+                  <p class="skill-desc">CVSS Metric Scoring, OWASP Top 10 Triage, Patch Management Verification.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 3: AI & PYTHON -->
+            <div id="ai-tab" class="tab-pane">
+              <div class="skills-matrix-grid">
+                <div class="skill-meter-card">
+                  <div class="skill-head">
+                    <span class="skill-name">Python Security Automation</span>
+                    <span class="skill-perc txt-green">96%</span>
+                  </div>
+                  <div class="meter-bar"><div class="fill bg-green" style="width: 96%"></div></div>
+                  <p class="skill-desc">Custom Log Parsers, Socket Scripting, API Integrations, Automation Pipelines.</p>
+                </div>
+
+                <div class="skill-meter-card">
+                  <div class="skill-head">
+                    <span class="skill-name">AI Anomaly Detection</span>
+                    <span class="skill-perc txt-cyan">90%</span>
+                  </div>
+                  <div class="meter-bar"><div class="fill bg-cyan" style="width: 90%"></div></div>
+                  <p class="skill-desc">Scikit-Learn, Isolation Forests, Autoencoders, Unsupervised Traffic Clustering.</p>
+                </div>
+
+                <div class="skill-meter-card">
+                  <div class="skill-head">
+                    <span class="skill-name">NLP & Chatbot Engineering</span>
+                    <span class="skill-perc txt-purple">88%</span>
+                  </div>
+                  <div class="meter-bar"><div class="fill bg-purple" style="width: 88%"></div></div>
+                  <p class="skill-desc">Intent Classification, Cyber Knowledge Graphs, Conversational Triage Assistants.</p>
+                </div>
+
+                <div class="skill-meter-card">
+                  <div class="skill-head">
+                    <span class="skill-name">Data Processing (Pandas/NumPy)</span>
+                    <span class="skill-perc txt-green">92%</span>
+                  </div>
+                  <div class="meter-bar"><div class="fill bg-green" style="width: 92%"></div></div>
+                  <p class="skill-desc">High-speed telemetry data cleaning, feature extraction, time-series metrics.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 4: NETWORK & SYSTEMS -->
+            <div id="net-tab" class="tab-pane">
+              <div class="skills-matrix-grid">
+                <div class="skill-meter-card">
+                  <div class="skill-head">
+                    <span class="skill-name">Linux System Hardening</span>
+                    <span class="skill-perc txt-green">94%</span>
+                  </div>
+                  <div class="meter-bar"><div class="fill bg-green" style="width: 94%"></div></div>
+                  <p class="skill-desc">Kernel Tuning, SSH Key Enforcement, UFW/IPTables, Auditd Log Enforcement.</p>
+                </div>
+
+                <div class="skill-meter-card">
+                  <div class="skill-head">
+                    <span class="skill-name">TCP/IP & Cisco Architecture</span>
+                    <span class="skill-perc txt-cyan">93%</span>
+                  </div>
+                  <div class="meter-bar"><div class="fill bg-cyan" style="width: 93%"></div></div>
+                  <p class="skill-desc">Subnetting, VLAN Segmentation, Router Access Lists, Network Protocols.</p>
+                </div>
+
+                <div class="skill-meter-card">
+                  <div class="skill-head">
+                    <span class="skill-name">Cryptography & PKI</span>
+                    <span class="skill-perc txt-purple">89%</span>
+                  </div>
+                  <div class="meter-bar"><div class="fill bg-purple" style="width: 89%"></div></div>
+                  <p class="skill-desc">SSL/TLS Certificates, Hashing Algorithms, SSH Tunnels, Symmetric Encryption.</p>
+                </div>
+
+                <div class="skill-meter-card">
+                  <div class="skill-head">
+                    <span class="skill-name">Cloud Security Foundations</span>
+                    <span class="skill-perc txt-green">87%</span>
+                  </div>
+                  <div class="meter-bar"><div class="fill bg-green" style="width: 87%"></div></div>
+                  <p class="skill-desc">IAM Access Policies, VPC Isolation, Security Groups, Audit Logging.</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURED PROJECTS SECTION -->
+    <section id="projects" class="section-container">
+      <div class="section-header">
+        <span class="section-tag">[ SECTION 03 ]</span>
+        <h2 class="glitch-header section-title" data-text="CYBER DEPLOYMENTS">CYBER DEPLOYMENTS</h2>
+        <div class="header-line"></div>
+      </div>
+
+      <div class="projects-grid">
+
+        <!-- PROJECT 1: SIEM Monitoring -->
+        <article class="project-card trace-border-card">
+          <div class="card-border-glow"></div>
+          <div class="terminal-window project-inner">
+            <div class="terminal-bar">
+              <div class="controls">
+                <span class="control close"></span>
+                <span class="control minimize"></span>
+                <span class="control maximize"></span>
+              </div>
+              <div class="terminal-title">proj_siem_monitoring.sys</div>
+              <div class="badge-status online">DEPLOYED</div>
+            </div>
+
+            <div class="project-content">
+              <div class="project-tags">
+                <span class="p-tag tag-green">Splunk SIEM</span>
+                <span class="p-tag tag-cyan">Snort IDS</span>
+                <span class="p-tag tag-purple">Log Telemetry</span>
+              </div>
+
+              <h3 class="project-title">Network Security Monitoring using SIEM Tools</h3>
+              
+              <p class="project-desc">
+                Architected an enterprise-grade SIEM log monitoring and real-time intrusion detection pipeline. Ingested multi-source syslog telemetry, constructed custom Splunk search processing rules for brute-force attacks, port scans, and unauthorized privilege escalation.
+              </p>
+
+              <div class="project-specs">
+                <div class="spec-item">
+                  <span class="spec-label">DETECTION MTTD:</span>
+                  <span class="spec-val txt-green">-65% Reduction</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-label">LOG SOURCE:</span>
+                  <span class="spec-val txt-cyan">Splunk / Snort / Syslog</span>
+                </div>
+              </div>
+
+              <div class="project-actions">
+                <button class="cyber-btn mini-btn project-modal-trigger" data-project="siem">
+                  <span>VIEW ARCHITECTURE</span>
+                </button>
+                <a href="#contact" class="link-btn">REQUEST ACCESS ↗</a>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- PROJECT 2: AI Chatbot using Python -->
+        <article class="project-card trace-border-card">
+          <div class="card-border-glow"></div>
+          <div class="terminal-window project-inner">
+            <div class="terminal-bar">
+              <div class="controls">
+                <span class="control close"></span>
+                <span class="control minimize"></span>
+                <span class="control maximize"></span>
+              </div>
+              <div class="terminal-title">proj_ai_cyber_chatbot.py</div>
+              <div class="badge-status online">ACTIVE</div>
+            </div>
+
+            <div class="project-content">
+              <div class="project-tags">
+                <span class="p-tag tag-cyan">Python NLP</span>
+                <span class="p-tag tag-green">AI Assistant</span>
+                <span class="p-tag tag-purple">Threat Advisory</span>
+              </div>
+
+              <h3 class="project-title">AI Chatbot using Python</h3>
+              
+              <p class="project-desc">
+                Engineered an intelligent conversational SOC assistant powered by Python and NLP. Automates level-1 threat inquiry, guides analysts through incident response playbooks, parses IP reputation data, and delivers instant CVE vulnerability summaries.
+              </p>
+
+              <div class="project-specs">
+                <div class="spec-item">
+                  <span class="spec-label">TRIAGE AUTOMATION:</span>
+                  <span class="spec-val txt-cyan">75% Level-1 Queries</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-label">ENGINE:</span>
+                  <span class="spec-val txt-purple">Python / NLTK / Intent Model</span>
+                </div>
+              </div>
+
+              <div class="project-actions">
+                <button class="cyber-btn mini-btn project-modal-trigger" data-project="chatbot">
+                  <span>VIEW ARCHITECTURE</span>
+                </button>
+                <a href="#contact" class="link-btn">REQUEST ACCESS ↗</a>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- PROJECT 3: Autonomous Threat Detection Engine -->
+        <article class="project-card trace-border-card">
+          <div class="card-border-glow"></div>
+          <div class="terminal-window project-inner">
+            <div class="terminal-bar">
+              <div class="controls">
+                <span class="control close"></span>
+                <span class="control minimize"></span>
+                <span class="control maximize"></span>
+              </div>
+              <div class="terminal-title">proj_ai_anomaly_engine.ml</div>
+              <div class="badge-status online">RUNNING</div>
+            </div>
+
+            <div class="project-content">
+              <div class="project-tags">
+                <span class="p-tag tag-purple">Scikit-Learn</span>
+                <span class="p-tag tag-green">Anomaly ML</span>
+                <span class="p-tag tag-cyan">Packet PCAP</span>
+              </div>
+
+              <h3 class="project-title">Autonomous AI Threat Detection Engine</h3>
+              
+              <p class="project-desc">
+                Built an unsupervised machine learning model utilizing Isolation Forests and Autoencoders to analyze raw packet captures and isolate zero-day anomalies, DNS tunneling attempts, and unauthorized data exfiltration without requiring prior signature databases.
+              </p>
+
+              <div class="project-specs">
+                <div class="spec-item">
+                  <span class="spec-label">ACCURACY RATE:</span>
+                  <span class="spec-val txt-green">98.4% Benchmark</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-label">LATENCY:</span>
+                  <span class="spec-val txt-cyan">&lt; 15ms Processing</span>
+                </div>
+              </div>
+
+              <div class="project-actions">
+                <button class="cyber-btn mini-btn project-modal-trigger" data-project="ml-engine">
+                  <span>VIEW ARCHITECTURE</span>
+                </button>
+                <a href="#contact" class="link-btn">REQUEST ACCESS ↗</a>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- PROJECT 4: Metasploit Vuln Assessor -->
+        <article class="project-card trace-border-card">
+          <div class="card-border-glow"></div>
+          <div class="terminal-window project-inner">
+            <div class="terminal-bar">
+              <div class="controls">
+                <span class="control close"></span>
+                <span class="control minimize"></span>
+                <span class="control maximize"></span>
+              </div>
+              <div class="terminal-title">proj_msf_automation.sh</div>
+              <div class="badge-status online">VERIFIED</div>
+            </div>
+
+            <div class="project-content">
+              <div class="project-tags">
+                <span class="p-tag tag-green">Metasploit</span>
+                <span class="p-tag tag-cyan">Nmap Scan</span>
+                <span class="p-tag tag-purple">CVE Mapper</span>
+              </div>
+
+              <h3 class="project-title">Metasploit Exploit Orchestrator & Vuln Scanner</h3>
+              
+              <p class="project-desc">
+                Developed a Python scripting bridge integrating Nmap port sweeps directly with the Metasploit MSFRPC API. Automatically cross-references discovered open services with published CVE databases, generating automated vulnerability risk scores and patch recommendations.
+              </p>
+
+              <div class="project-specs">
+                <div class="spec-item">
+                  <span class="spec-label">SCAN TIME:</span>
+                  <span class="spec-val txt-green">10x Speedup</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-label">API BRIDGE:</span>
+                  <span class="spec-val txt-purple">Python MSFRPC</span>
+                </div>
+              </div>
+
+              <div class="project-actions">
+                <button class="cyber-btn mini-btn project-modal-trigger" data-project="metasploit">
+                  <span>VIEW ARCHITECTURE</span>
+                </button>
+                <a href="#contact" class="link-btn">REQUEST ACCESS ↗</a>
+              </div>
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- CERTIFICATIONS SECTION (3D TILT GLASS CARDS) -->
+    <section id="certifications" class="section-container">
+      <div class="section-header">
+        <span class="section-tag">[ SECTION 04 ]</span>
+        <h2 class="glitch-header section-title" data-text="VERIFIED CREDENTIALS">VERIFIED CREDENTIALS</h2>
+        <div class="header-line"></div>
+      </div>
+
+      <div class="certs-grid">
+
+        <!-- CERT 1: CISCO CYBERSECURITY BEGINNER -->
+        <div class="glass-card cert-card tilt-card" data-tilt>
+          <div class="cert-shine"></div>
+          <div class="cert-header">
+            <div class="cert-badge-icon txt-green">🛡️</div>
+            <div class="cert-issuer">CISCO NETWORKING ACADEMY</div>
+          </div>
+          <h3 class="cert-title">Cisco Cybersecurity Beginner</h3>
+          <p class="cert-desc">
+            Foundational certification covering threat landscapes, network defense principles, access control matrices, and baseline vulnerability mitigation strategies.
+          </p>
+          <div class="cert-footer">
+            <span class="cert-id">ID: CISCO-CS-BEG-2024</span>
+            <span class="cert-status verified">VERIFIED ✓</span>
+          </div>
+        </div>
+
+        <!-- CERT 2: CISCO CYBERSECURITY ESSENTIALS -->
+        <div class="glass-card cert-card tilt-card" data-tilt>
+          <div class="cert-shine"></div>
+          <div class="cert-header">
+            <div class="cert-badge-icon txt-cyan">🔒</div>
+            <div class="cert-issuer">CISCO NETWORKING ACADEMY</div>
+          </div>
+          <h3 class="cert-title">Cisco Cybersecurity Essentials</h3>
+          <p class="cert-desc">
+            Advanced concepts in data confidentiality, CIA triad enforcement, security controls, firewall configuration, and SOC threat monitoring frameworks.
+          </p>
+          <div class="cert-footer">
+            <span class="cert-id">ID: CISCO-CS-ESS-2024</span>
+            <span class="cert-status verified">VERIFIED ✓</span>
+          </div>
+        </div>
+
+        <!-- CERT 3: SOC & SIEM TELEMETRY -->
+        <div class="glass-card cert-card tilt-card" data-tilt>
+          <div class="cert-shine"></div>
+          <div class="cert-header">
+            <div class="cert-badge-icon txt-purple">⚡</div>
+            <div class="cert-issuer">ENTERPRISE SOC LAB</div>
+          </div>
+          <h3 class="cert-title">SOC Operations & SIEM Telemetry</h3>
+          <p class="cert-desc">
+            Specialized qualification in Splunk Search Processing Language (SPL), log parser engineering, alert rule design, and real-time incident triage.
+          </p>
+          <div class="cert-footer">
+            <span class="cert-id">ID: SOC-SIEM-8921</span>
+            <span class="cert-status verified">VERIFIED ✓</span>
+          </div>
+        </div>
+
+        <!-- CERT 4: PYTHON FOR AI & SECURITY -->
+        <div class="glass-card cert-card tilt-card" data-tilt>
+          <div class="cert-shine"></div>
+          <div class="cert-header">
+            <div class="cert-badge-icon txt-green">🐍</div>
+            <div class="cert-issuer">AI & SECURITY GUILD</div>
+          </div>
+          <h3 class="cert-title">Python for AI & Security Automation</h3>
+          <p class="cert-desc">
+            Hands-on accreditation for developing AI anomaly detection scripts, socket programming, security tool APIs, and automated threat scoring engines.
+          </p>
+          <div class="cert-footer">
+            <span class="cert-id">ID: PY-AI-SEC-9904</span>
+            <span class="cert-status verified">VERIFIED ✓</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- LIVE SOC OPERATIONS SIMULATOR -->
+    <section id="soc-simulator" class="section-container">
+      <div class="section-header">
+        <span class="section-tag">[ SECTION 05 ]</span>
+        <h2 class="glitch-header section-title" data-text="SOC LIVE THREAT SIMULATOR">SOC LIVE THREAT SIMULATOR</h2>
+        <div class="header-line"></div>
+      </div>
+
+      <div class="terminal-window simulator-terminal">
+        <div class="terminal-bar">
+          <div class="controls">
+            <span class="control close"></span>
+            <span class="control minimize"></span>
+            <span class="control maximize"></span>
+          </div>
+          <div class="terminal-title">live_soc_telemetry_feed.stream</div>
+          <div class="terminal-meta">
+            <span id="simDefconBadge" class="defcon-badge green">DEFCON 1: SECURE</span>
+          </div>
+        </div>
+
+        <div class="simulator-body">
+          <div class="sim-toolbar">
+            <div class="sim-actions">
+              <button id="btnSimDdos" class="cyber-btn mini-btn danger-btn">
+                <span>SIMULATE DDOS ATTACK</span>
+              </button>
+              <button id="btnSimBrute" class="cyber-btn mini-btn warning-btn">
+                <span>TRIGGER BRUTE FORCE SCAN</span>
+              </button>
+              <button id="btnSimAiDefend" class="cyber-btn mini-btn primary-btn">
+                <span>DEPLOY AI MITIGATION</span>
+              </button>
+              <button id="btnSimReset" class="cyber-btn mini-btn outline-btn">
+                <span>CLEAR STREAM</span>
+              </button>
+            </div>
+            
+            <div class="sim-counters">
+              <span class="cnt-item">PACKETS/SEC: <span id="cntPps" class="txt-cyan">1,240</span></span>
+              <span class="cnt-item">BLOCKED IP: <span id="cntBlocked" class="txt-purple">48</span></span>
+            </div>
+          </div>
+
+          <div class="sim-log-feed" id="simLogFeed">
+            <div class="log-row info">
+              <span class="time">[00:00:01]</span> <span class="tag">[SYSTEM_OK]</span> SOC Telemetry Stream Initialized. Monitoring interface eth0...
+            </div>
+            <div class="log-row info">
+              <span class="time">[00:00:03]</span> <span class="tag">[SIEM_STATUS]</span> Splunk Search Processing Engine listening on port 8089.
+            </div>
+            <div class="log-row info">
+              <span class="time">[00:00:05]</span> <span class="tag">[AI_MODEL]</span> Anomaly Detection Model loaded. Baseline entropy: 0.042.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTERACTIVE SOC CLI TERMINAL -->
+    <section id="terminal-cli" class="section-container">
+      <div class="section-header">
+        <span class="section-tag">[ SECTION 06 ]</span>
+        <h2 class="glitch-header section-title" data-text="INTERACTIVE COMMAND CLI">INTERACTIVE COMMAND CLI</h2>
+        <div class="header-line"></div>
+      </div>
+
+      <div class="terminal-window cli-terminal">
+        <div class="terminal-bar">
+          <div class="controls">
+            <span class="control close"></span>
+            <span class="control minimize"></span>
+            <span class="control maximize"></span>
+          </div>
+          <div class="terminal-title">bash -- bash@sashank-soc-node: ~</div>
+          <div class="terminal-meta">TYPE 'help' FOR COMMANDS</div>
+        </div>
+
+        <div class="terminal-body cli-body" id="cliOutput">
+          <div class="cli-welcome">
+            <p class="txt-green">===============================================================</p>
+            <p class="txt-green">  ALLA SURYA SRI SASHANK - CYBER OPERATIONS CLI V4.0</p>
+            <p class="txt-cyan">  Type '<span class="txt-green">help</span>' to list available system commands.</p>
+            <p class="txt-purple">  Type '<span class="txt-green">skills</span>', '<span class="txt-green">projects</span>', '<span class="txt-green">certs</span>', '<span class="txt-green">scan</span>', or '<span class="txt-green">contact</span>'.</p>
+            <p class="txt-green">===============================================================</p>
+          </div>
+        </div>
+
+        <div class="cli-input-line">
+          <span class="prompt">agy-soc@sashank:~$</span>
+          <input type="text" id="cliInput" placeholder="Enter command (e.g., help, scan, projects)..." autocomplete="off" spellcheck="false" />
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT SECTION -->
+    <section id="contact" class="section-container">
+      <div class="section-header">
+        <span class="section-tag">[ SECTION 07 ]</span>
+        <h2 class="glitch-header section-title" data-text="INITIATE DISPATCH">INITIATE DISPATCH</h2>
+        <div class="header-line"></div>
+      </div>
+
+      <div class="contact-grid">
+        <div class="terminal-window contact-form-terminal">
+          <div class="terminal-bar">
+            <div class="controls">
+              <span class="control close"></span>
+              <span class="control minimize"></span>
+              <span class="control maximize"></span>
+            </div>
+            <div class="terminal-title">secure_dispatch_channel.enc</div>
+            <div class="terminal-meta">ENCRYPTION: ENABLED</div>
+          </div>
+
+          <form id="contactForm" class="contact-form">
+            <div class="form-group">
+              <label for="senderName" class="form-label">SENDER IDENTITY (NAME)</label>
+              <input type="text" id="senderName" required placeholder="e.g. Commander Alex Vance" class="cyber-input" />
+            </div>
+
+            <div class="form-group">
+              <label for="senderEmail" class="form-label">RETURN ADDRESS (EMAIL)</label>
+              <input type="email" id="senderEmail" required placeholder="e.g. alex@cyberdefense.org" class="cyber-input" />
+            </div>
+
+            <div class="form-group">
+              <label for="msgSubject" class="form-label">PAYLOAD SUBJECT</label>
+              <input type="text" id="msgSubject" required placeholder="e.g. SOC Analyst Inquiry / AI Project Collaboration" class="cyber-input" />
+            </div>
+
+            <div class="form-group">
+              <label for="msgBody" class="form-label">ENCRYPTED MESSAGE CONTENT</label>
+              <textarea id="msgBody" rows="5" required placeholder="Transmit your directive or mission brief here..." class="cyber-input"></textarea>
+            </div>
+
+            <button type="submit" id="contactSubmitBtn" class="cyber-btn primary-btn full-width">
+              <span class="btn-text">DISPATCH ENCRYPTED PAYLOAD</span>
+            </button>
+            <div id="contactStatus" class="contact-status"></div>
+          </form>
+        </div>
+
+        <div class="contact-meta-panel">
+          <div class="glass-card meta-card">
+            <h3 class="meta-title txt-green">DIRECT COMM COMMUNICATOR</h3>
+            <p class="meta-desc">Available for Security Engineering, SOC Analyst roles, AI Cyber Threat research, and Ethical Hacking consultation.</p>
+
+            <div class="comm-channel">
+              <span class="chan-icon">📧</span>
+              <div class="chan-info">
+                <span class="chan-label">SECURE MAIL</span>
+                <span class="chan-val">sashank.soc@cyberdomain.io</span>
+              </div>
+            </div>
+
+            <div class="comm-channel">
+              <span class="chan-icon">📍</span>
+              <div class="chan-info">
+                <span class="chan-label">BASE LOCATION</span>
+                <span class="chan-val">India // Open to Global Remote & On-site</span>
+              </div>
+            </div>
+
+            <div class="comm-channel">
+              <span class="chan-icon">🔑</span>
+              <div class="chan-info">
+                <span class="chan-label">PGP KEY FINGERPRINT</span>
+                <span class="chan-val">4F9A 8B21 00FF 669D 2470</span>
+              </div>
+            </div>
+
+            <div class="social-cyber-grid">
+              <a href="https://github.com" target="_blank" rel="noopener" class="cyber-social-link">
+                <span>GITHUB</span> ↗
+              </a>
+              <a href="https://linkedin.com" target="_blank" rel="noopener" class="cyber-social-link">
+                <span>LINKEDIN</span> ↗
+              </a>
+              <a href="https://tryhackme.com" target="_blank" rel="noopener" class="cyber-social-link">
+                <span>TRYHACKME</span> ↗
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="soc-footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="status-indicator online"></span>
+        <span>ALLA SURYA SRI SASHANK &copy; 2026 // ALL SYSTEM TELEMETRY NOMINAL</span>
+      </div>
+      <div class="footer-right">
+        <span>SECURITY LEVEL: <span class="txt-green">DEFCON 1</span></span>
+        <span class="divider">|</span>
+        <span>ENCRYPTION: <span class="txt-cyan">ACTIVE</span></span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- PROJECT DETAIL MODAL -->
+  <div id="projectModal" class="modal-backdrop">
+    <div class="terminal-window modal-terminal">
+      <div class="terminal-bar">
+        <div class="controls">
+          <span class="control close" id="modalClose"></span>
+          <span class="control minimize"></span>
+          <span class="control maximize"></span>
+        </div>
+        <div class="terminal-title" id="modalTitle">architecture_diagram.sys</div>
+      </div>
+      <div class="terminal-body modal-body" id="modalContent">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- BUNDLED JAVASCRIPT ENGINES (COMPLETELY STANDALONE & CORS-PROOF) -->
+  <script>
+    // 1. Web Audio Synthesizer
+    class SoundController {
+      constructor() { this.audioCtx = null; this.muted = false; }
+      init() {
+        if (!this.audioCtx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.audioCtx = new AudioContext();
+        }
+      }
+      playBlip(freq = 800, duration = 0.04, type = 'sine') {
+        if (this.muted) return;
+        this.init();
+        if (!this.audioCtx) return;
+        try {
+          const osc = this.audioCtx.createOscillator();
+          const gain = this.audioCtx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.audioCtx.currentTime);
+          gain.gain.setValueAtTime(0.05, this.audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(this.audioCtx.destination);
+          osc.start();
+          osc.stop(this.audioCtx.currentTime + duration);
+        } catch (e) {}
+      }
+      playClick() { this.playBlip(1200, 0.02, 'square'); }
+      playAlert() {
+        this.playBlip(440, 0.1, 'sawtooth');
+        setTimeout(() => this.playBlip(880, 0.15, 'sawtooth'), 80);
+      }
+      toggleMute() { this.muted = !this.muted; return this.muted; }
+    }
+    const soundFx = new SoundController();
+
+    // 2. Matrix Code Rain Engine
+    function initMatrixRain(canvasId) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const characters = '010101010101ABCDEF0123456789SOC_SECURE_DEFCON_SPLUNK_AI';
+      const fontSize = 14;
+      let columns = 0;
+      let drops = [];
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        columns = Math.floor(canvas.width / fontSize);
+        drops = [];
+        for (let i = 0; i < columns; i++) drops[i] = Math.floor(Math.random() * -100);
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      let lastTime = 0;
+      function draw(currentTime) {
+        requestAnimationFrame(draw);
+        if (currentTime - lastTime < 33) return; // 30fps
+        lastTime = currentTime;
+
+        ctx.fillStyle = 'rgba(8, 8, 8, 0.15)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.font = fontSize + 'px "Share Tech Mono", monospace';
+
+        for (let i = 0; i < drops.length; i++) {
+          const char = characters.charAt(Math.floor(Math.random() * characters.length));
+          const x = i * fontSize;
+          const y = drops[i] * fontSize;
+
+          ctx.fillStyle = Math.random() > 0.92 ? '#00F0FF' : '#00FF66';
+          ctx.fillText(char, x, y);
+
+          if (y > canvas.height && Math.random() > 0.975) drops[i] = 0;
+          drops[i]++;
+        }
+      }
+      requestAnimationFrame(draw);
+    }
+
+    // 3. Cyber Radar & Network Nodes Canvas (150px Magnetization Radius)
+    function initRadarNodes(canvasId) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      const mouse = { x: -1000, y: -1000, radius: 150, active: false };
+      let nodes = [];
+      let sweepAngle = 0;
+
+      function resize() {
+        const parent = canvas.parentElement;
+        canvas.width = parent.clientWidth;
+        canvas.height = parent.clientHeight;
+        initNodes();
+      }
+
+      function initNodes() {
+        nodes = [];
+        const count = Math.min(Math.floor(canvas.width / 20), 55);
+        for (let i = 0; i < count; i++) {
+          nodes.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            vx: (Math.random() - 0.5) * 0.6,
+            vy: (Math.random() - 0.5) * 0.6,
+            size: Math.random() * 2 + 1.5,
+            ping: Math.random() > 0.85
+          });
+        }
+      }
+
+      window.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        mouse.x = e.clientX - rect.left;
+        mouse.y = e.clientY - rect.top;
+        mouse.active = true;
+      });
+      window.addEventListener('mouseleave', () => { mouse.active = false; });
+      window.addEventListener('resize', resize);
+      resize();
+
+      function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const maxRadius = Math.min(canvas.width, canvas.height) * 0.45;
+
+        // Radar Target Concentric Rings
+        ctx.save();
+        ctx.strokeStyle = 'rgba(0, 240, 255, 0.08)';
+        ctx.lineWidth = 1;
+        for (let r = 0.2; r <= 1; r += 0.2) {
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, maxRadius * r, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        ctx.beginPath();
+        ctx.moveTo(centerX - maxRadius, centerY); ctx.lineTo(centerX + maxRadius, centerY);
+        ctx.moveTo(centerX, centerY - maxRadius); ctx.lineTo(centerX, centerY + maxRadius);
+        ctx.stroke();
+        ctx.restore();
+
+        // Slow Radar Sweep Beam
+        sweepAngle += 0.008;
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        const sweepGrad = ctx.createConicGradient(sweepAngle, 0, 0);
+        sweepGrad.addColorStop(0, 'rgba(0, 255, 102, 0.25)');
+        sweepGrad.addColorStop(0.1, 'rgba(0, 240, 255, 0.08)');
+        sweepGrad.addColorStop(0.25, 'rgba(0, 240, 255, 0)');
+        sweepGrad.addColorStop(1, 'rgba(0, 240, 255, 0)');
+        ctx.fillStyle = sweepGrad;
+        ctx.beginPath(); ctx.arc(0, 0, maxRadius, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#00FF66';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(sweepAngle) * maxRadius, Math.sin(sweepAngle) * maxRadius); ctx.stroke();
+        ctx.restore();
+
+        // Nodes & Magnetization
+        for (let i = 0; i < nodes.length; i++) {
+          const node = nodes[i];
+          node.x += node.vx; node.y += node.vy;
+          if (node.x < 0 || node.x > canvas.width) node.vx *= -1;
+          if (node.y < 0 || node.y > canvas.height) node.vy *= -1;
+
+          if (mouse.active) {
+            const dx = mouse.x - node.x;
+            const dy = mouse.y - node.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < mouse.radius) {
+              const force = (mouse.radius - dist) / mouse.radius;
+              const angle = Math.atan2(dy, dx);
+              node.x += Math.cos(angle) * force * 3;
+              node.y += Math.sin(angle) * force * 3;
+
+              ctx.strokeStyle = `rgba(0, 255, 102, ${force * 0.6})`;
+              ctx.lineWidth = 1;
+              ctx.beginPath(); ctx.moveTo(node.x, node.y); ctx.lineTo(mouse.x, mouse.y); ctx.stroke();
+            }
+          }
+
+          ctx.fillStyle = node.ping ? '#00FF66' : '#00F0FF';
+          ctx.beginPath(); ctx.arc(node.x, node.y, node.size, 0, Math.PI * 2); ctx.fill();
+
+          for (let j = i + 1; j < nodes.length; j++) {
+            const other = nodes[j];
+            const ndx = other.x - node.x, ndy = other.y - node.y;
+            const nDist = Math.sqrt(ndx * ndx + ndy * ndy);
+            if (nDist < 120) {
+              ctx.strokeStyle = `rgba(0, 240, 255, ${(120 - nDist) / 120 * 0.15})`;
+              ctx.lineWidth = 0.75;
+              ctx.beginPath(); ctx.moveTo(node.x, node.y); ctx.lineTo(other.x, other.y); ctx.stroke();
+            }
+          }
+        }
+
+        // Reticle
+        if (mouse.active) {
+          ctx.save();
+          ctx.strokeStyle = '#00FF66'; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.arc(mouse.x, mouse.y, 25, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(mouse.x - 32, mouse.y); ctx.lineTo(mouse.x - 18, mouse.y);
+          ctx.moveTo(mouse.x + 18, mouse.y); ctx.lineTo(mouse.x + 32, mouse.y);
+          ctx.moveTo(mouse.x, mouse.y - 32); ctx.lineTo(mouse.x, mouse.y - 18);
+          ctx.moveTo(mouse.x, mouse.y + 18); ctx.lineTo(mouse.x, mouse.y + 32);
+          ctx.stroke();
+          ctx.font = '10px "Share Tech Mono", monospace'; ctx.fillStyle = '#00FF66';
+          ctx.fillText('TARGET_SCAN_ACTIVE', mouse.x + 30, mouse.y - 10);
+          ctx.restore();
+        }
+
+        requestAnimationFrame(render);
+      }
+      requestAnimationFrame(render);
+    }
+
+    // 4. Preloader Controller
+    function initPreloader() {
+      const preloader = document.getElementById('preloader');
+      const bootLogs = document.getElementById('bootLogs');
+      const progressBarFill = document.getElementById('progressBarFill');
+      const bootPercentage = document.getElementById('bootPercentage');
+      const bootStatus = document.getElementById('bootStatus');
+
+      const logs = [
+        { text: '[0.001] INITIALIZING AGY-SOC KERNEL V4.0.8...', status: 'BOOTING KERNEL' },
+        { text: '[0.012] ALLOCATING SECURE MEMORY BUFFER (AES-256)...', status: 'CRYPTOGRAPHY CHECK' },
+        { text: '[0.028] MOUNTING SIEM TELEMETRY ENGINE (SPLUNK / ELK)...', status: 'INGESTING LOGS' },
+        { text: '[0.045] CONNECTING SNORT IDS & INTRUSION PREVENTION...', status: 'FIREWALL LINK' },
+        { text: '[0.062] INITIALIZING AI ANOMALY MODEL (PYTHON/SKLEARN)...', status: 'LOADING AI WEIGHTS' },
+        { text: '[0.081] SCANNING SUB-NETS FOR ACTIVE NETWORK NODES...', status: 'RADAR INITIALIZED' },
+        { text: '[0.098] VERIFYING CISCO CYBERSECURITY CREDENTIAL MATRIX...', status: 'IDENTITY CONFIRMED' },
+        { text: '[0.100] ALL SYSTEMS SECURE - ACCESS GRANTED (100%)', status: 'SYSTEM READY' }
+      ];
+
+      let idx = 0;
+      function step() {
+        if (idx < logs.length) {
+          const p = document.createElement('p');
+          p.textContent = logs[idx].text;
+          bootLogs.appendChild(p);
+          bootLogs.scrollTop = bootLogs.scrollHeight;
+
+          const pct = Math.round(((idx + 1) / logs.length) * 100);
+          progressBarFill.style.width = pct + '%';
+          bootPercentage.textContent = pct + '%';
+          bootStatus.textContent = logs[idx].status;
+          idx++;
+          setTimeout(step, 120 + Math.random() * 60);
+        } else {
+          setTimeout(() => {
+            preloader.classList.add('hidden');
+            soundFx.playBlip(600, 0.3, 'sine');
+          }, 300);
+        }
+      }
+      setTimeout(step, 100);
+    }
+
+    // 5. 3D Tilt Cards
+    function init3DTiltCards() {
+      document.querySelectorAll('.tilt-card').forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+          const rotateX = ((y - centerY) / centerY) * -12;
+          const rotateY = ((x - centerX) / centerX) * 12;
+
+          card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(1.03, 1.03, 1.03)`;
+          const shine = card.querySelector('.cert-shine');
+          if (shine) shine.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255, 255, 255, 0.25) 0%, transparent 70%)`;
+        });
+        card.addEventListener('mouseleave', () => {
+          card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+          const shine = card.querySelector('.cert-shine');
+          if (shine) shine.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%)';
+        });
+      });
+    }
+
+    // 6. Terminal Tabs & CLI
+    function initTerminal() {
+      const tabs = document.getElementById('skillsTabs');
+      if (tabs) {
+        tabs.addEventListener('click', (e) => {
+          const btn = e.target.closest('.tab-btn');
+          if (!btn) return;
+          soundFx.playClick();
+          tabs.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const target = btn.getAttribute('data-target');
+          document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+          const activePane = document.getElementById(target);
+          if (activePane) activePane.classList.add('active');
+          const title = document.getElementById('skillsTermTitle');
+          if (title) title.textContent = `${btn.textContent.trim().toLowerCase().replace(/[^a-z0-9]/g, '_')}_matrix.json`;
+        });
+      }
+
+      const input = document.getElementById('cliInput');
+      const output = document.getElementById('cliOutput');
+      if (input && output) {
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            const cmd = input.value.trim().toLowerCase();
+            if (!cmd) return;
+            soundFx.playClick();
+            runCmd(cmd, output);
+            input.value = '';
+            output.scrollTop = output.scrollHeight;
+          }
+        });
+      }
+    }
+
+    function runCmd(cmd, out) {
+      const r1 = document.createElement('div');
+      r1.innerHTML = `<span class="prompt">agy-soc@sashank:~$</span> <span class="txt-cyan">${cmd}</span>`;
+      out.appendChild(r1);
+
+      const r2 = document.createElement('div');
+      if (cmd === 'help') {
+        r2.innerHTML = `<p class="txt-green">AVAILABLE DIRECTIVES:</p><p>about, skills, projects, certs, scan, contact, clear</p>`;
+      } else if (cmd === 'about') {
+        r2.innerHTML = `<p class="txt-green">[PROFILE]</p><p>Alla Surya Sri Sashank - AI & Cybersecurity SOC Specialist</p>`;
+      } else if (cmd === 'skills') {
+        r2.innerHTML = `<p class="txt-green">[SKILLS]</p><p>Splunk SIEM, Metasploit, Python AI Anomaly Detection, Snort IDS, Linux Hardening</p>`;
+      } else if (cmd === 'projects') {
+        r2.innerHTML = `<p class="txt-green">[PROJECTS]</p><p>1. SIEM Security Monitoring | 2. AI Python Chatbot | 3. ML Threat Engine | 4. Metasploit Scanner</p>`;
+      } else if (cmd === 'certs') {
+        r2.innerHTML = `<p class="txt-green">[CERTS]</p><p>✓ Cisco Cybersecurity Beginner | ✓ Cisco Cybersecurity Essentials</p>`;
+      } else if (cmd === 'scan') {
+        soundFx.playAlert();
+        r2.innerHTML = `<p class="txt-amber">[SUBNET SCAN COMPLETE]</p><p class="txt-green">192.168.1.0/24 Subnet Clean. 0 Anomaly Alerts. DEFCON 1 ACTIVE.</p>`;
+      } else if (cmd === 'contact') {
+        r2.innerHTML = `<p class="txt-cyan">Mail: sashank.soc@cyberdomain.io | PGP: 4F9A 8B21 00FF 669D 2470</p>`;
+      } else if (cmd === 'clear') {
+        out.innerHTML = ''; return;
+      } else {
+        r2.innerHTML = `<p class="txt-red">Unknown directive '${cmd}'. Type 'help'.</p>`;
+      }
+      out.appendChild(r2);
+    }
+
+    // 7. Modals
+    function initModals() {
+      const modal = document.getElementById('projectModal');
+      const title = document.getElementById('modalTitle');
+      const content = document.getElementById('modalContent');
+      const close = document.getElementById('modalClose');
+
+      const data = {
+        'siem': { title: 'arch_siem_monitoring.sys', html: '<h3 class="txt-green">Network Security Monitoring using SIEM Tools</h3><p style="color:#8892B0;margin-top:0.5rem">Splunk & Snort IDS pipeline with real-time brute force & port scan detection rules.</p>' },
+        'chatbot': { title: 'arch_ai_chatbot.py', html: '<h3 class="txt-cyan">AI Chatbot using Python</h3><p style="color:#8892B0;margin-top:0.5rem">Conversational NLP SOC assistant for automated level-1 threat inquiries & CVE reports.</p>' },
+        'ml-engine': { title: 'arch_ai_anomaly.ml', html: '<h3 class="txt-purple">Autonomous AI Threat Detection Engine</h3><p style="color:#8892B0;margin-top:0.5rem">Scikit-Learn Isolation Forest model detecting zero-day network anomalies.</p>' },
+        'metasploit': { title: 'arch_metasploit_audit.sh', html: '<h3 class="txt-green">Metasploit Exploit Orchestrator</h3><p style="color:#8892B0;margin-top:0.5rem">Python MSFRPC API bridge automating Nmap sweeps & CVE risk scoring.</p>' }
+      };
+
+      document.querySelectorAll('.project-modal-trigger').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const k = btn.getAttribute('data-project');
+          if (data[k]) {
+            soundFx.playClick();
+            title.textContent = data[k].title;
+            content.innerHTML = data[k].html;
+            modal.classList.add('active');
+          }
+        });
+      });
+
+      const shut = () => { soundFx.playClick(); modal.classList.remove('active'); };
+      if (close) close.addEventListener('click', shut);
+      if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) shut(); });
+    }
+
+    // 8. Simulator
+    function initSimulator() {
+      const logFeed = document.getElementById('simLogFeed');
+      const badge = document.getElementById('simDefconBadge');
+      const navDef = document.getElementById('navDefcon');
+      const ppsEl = document.getElementById('cntPps');
+      const blkEl = document.getElementById('cntBlocked');
+
+      let blk = 48;
+      function log(sev, tag, txt) {
+        if (!logFeed) return;
+        const div = document.createElement('div');
+        div.className = `log-row ${sev}`;
+        const t = new Date().toTimeString().split(' ')[0];
+        div.innerHTML = `<span class="time">[${t}]</span> <span class="tag">[${tag}]</span> ${txt}`;
+        logFeed.appendChild(div);
+        logFeed.scrollTop = logFeed.scrollHeight;
+      }
+
+      document.getElementById('btnSimDdos')?.addEventListener('click', () => {
+        soundFx.playAlert();
+        if (badge) { badge.className = 'defcon-badge red'; badge.textContent = 'DEFCON 3: CRITICAL ATTACK'; }
+        if (navDef) { navDef.className = 'val red'; navDef.textContent = 'DEFCON 3'; }
+        if (ppsEl) ppsEl.textContent = '148,500';
+        log('danger', 'DDOS_ALERT', 'UDP Flood detected on interface eth0! Target Port 443.');
+      });
+
+      document.getElementById('btnSimBrute')?.addEventListener('click', () => {
+        soundFx.playAlert();
+        if (badge) { badge.className = 'defcon-badge amber'; badge.textContent = 'DEFCON 2: ELEVATED THREAT'; }
+        if (navDef) { navDef.className = 'val amber'; navDef.textContent = 'DEFCON 2'; }
+        blk++; if (blkEl) blkEl.textContent = blk;
+        log('warn', 'AUTH_FAIL', '350 failed SSH authentication attempts from IP 194.26.29.110.');
+        log('success', 'IPTABLES', 'IP 194.26.29.110 appended to drop table.');
+      });
+
+      document.getElementById('btnSimAiDefend')?.addEventListener('click', () => {
+        soundFx.playBlip(1000, 0.2, 'sine');
+        if (badge) { badge.className = 'defcon-badge green'; badge.textContent = 'DEFCON 1: SECURE'; }
+        if (navDef) { navDef.className = 'val green'; navDef.textContent = 'DEFCON 1'; }
+        if (ppsEl) ppsEl.textContent = '1,240';
+        log('success', 'AI_ENGINE', 'Unsupervised anomaly model activated. Baseline restored.');
+      });
+
+      document.getElementById('btnSimReset')?.addEventListener('click', () => {
+        soundFx.playClick();
+        if (logFeed) logFeed.innerHTML = '';
+        log('info', 'SYSTEM_RESET', 'Telemetry Log Feed cleared. Baseline active.');
+      });
+    }
+
+    // Master Initialization
+    document.addEventListener('DOMContentLoaded', () => {
+      initMatrixRain('matrixCanvas');
+      initRadarNodes('radarCanvas');
+      initPreloader();
+      init3DTiltCards();
+      initTerminal();
+      initModals();
+      initSimulator();
+
+      document.getElementById('audioToggle')?.addEventListener('click', () => {
+        const muted = soundFx.toggleMute();
+        const icon = document.getElementById('audioIcon');
+        if (icon) icon.textContent = muted ? '🔇' : '🔊';
+        if (!muted) soundFx.playClick();
+      });
+
+      document.getElementById('mobileMenuBtn')?.addEventListener('click', () => {
+        soundFx.playClick();
+        document.getElementById('mobileDrawer')?.classList.toggle('open');
+      });
+
+      document.querySelectorAll('.mobile-link').forEach(l => {
+        l.addEventListener('click', () => document.getElementById('mobileDrawer')?.classList.remove('open'));
+      });
+
+      const contactForm = document.getElementById('contactForm');
+      const contactStatus = document.getElementById('contactStatus');
+      const submitBtn = document.getElementById('contactSubmitBtn');
+      if (contactForm && contactStatus) {
+        contactForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          soundFx.playAlert();
+          if (submitBtn) submitBtn.disabled = true;
+          contactStatus.className = 'contact-status txt-cyan';
+          contactStatus.textContent = 'ENCRYPTING PAYLOAD VIA AES-256-GCM...';
+          setTimeout(() => { contactStatus.textContent = 'CONNECTING TO SECURE SOCKET (PORT 443)...'; }, 600);
+          setTimeout(() => {
+            soundFx.playBlip(1200, 0.3, 'sine');
+            contactStatus.className = 'contact-status txt-green';
+            contactStatus.textContent = '✓ DISPATCH SUCCESSFUL: Payload delivered to Alla Surya Sri Sashank\'s SOC endpoint.';
+            contactForm.reset();
+            if (submitBtn) submitBtn.disabled = false;
+          }, 1500);
+        });
+      }
+
+      setInterval(() => {
+        const ping = Math.floor(Math.random() * 7) + 12;
+        const navPing = document.getElementById('navPing');
+        if (navPing) navPing.textContent = ping + 'ms';
+      }, 3000);
+    });
+  </script>
+</body>
+</html>

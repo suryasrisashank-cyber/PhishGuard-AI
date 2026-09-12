@@ -1,0 +1,228 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =============================================
+   PhishGuard AI 2.1 — Design System Variables
+   ============================================= */
+:root {
+  /* Dark Mode (Default) */
+  --bg-primary: #020617;
+  --bg-surface: #0a1628;
+  --bg-card: rgba(255, 255, 255, 0.025);
+  --bg-card-hover: rgba(255, 255, 255, 0.045);
+  --text-primary: #f1f5f9;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+
+  /* Borders */
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-accent: rgba(0, 194, 255, 0.2);
+
+  /* Accent colors */
+  --accent-cyan: #00c2ff;
+  --accent-blue: #2563eb;
+  --accent-purple: #7c3aed;
+
+  /* Verdict / Status colors */
+  --color-safe: #10b981;
+  --color-suspicious: #f59e0b;
+  --color-malicious: #ef4444;
+  --color-critical: #dc2626;
+  --color-unknown: #6b7280;
+
+  /* Severity colors */
+  --sev-informational: #6366f1;
+  --sev-low: #22d3ee;
+  --sev-medium: #f59e0b;
+  --sev-high: #f97316;
+  --sev-critical: #dc2626;
+
+  /* Investigation status colors */
+  --status-new: #6b7280;
+  --status-investigating: #2563eb;
+  --status-confirmed: #dc2626;
+  --status-responding: #f97316;
+  --status-false-positive: #10b981;
+  --status-resolved: #0d9488;
+
+  /* Typography */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+
+  /* Neon glow effects */
+  --glow-cyan: 0 0 20px rgba(0, 194, 255, 0.15);
+  --glow-red: 0 0 20px rgba(239, 68, 68, 0.15);
+  --glow-green: 0 0 20px rgba(16, 185, 129, 0.15);
+}
+
+/* Light Mode Override */
+html.light-mode {
+  --bg-primary: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-card: rgba(255, 255, 255, 0.95);
+  --bg-card-hover: rgba(241, 245, 249, 1);
+  --text-primary: #0f172a;
+  --text-muted: #334155;
+  --text-dim: #64748b;
+  --border-subtle: rgba(15, 23, 42, 0.08);
+  --border-accent: rgba(0, 194, 255, 0.4);
+}
+
+/* =============================================
+   Base Styles
+   ============================================= */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,194,255,0.3); }
+
+/* =============================================
+   Utility Classes
+   ============================================= */
+.glass-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 8px 32px rgba(2, 6, 23, 0.3);
+}
+
+.glass-card-hover {
+  transition: all 0.2s ease;
+}
+.glass-card-hover:hover {
+  background: var(--bg-card-hover);
+  border-color: rgba(0, 194, 255, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(2, 6, 23, 0.4), var(--glow-cyan);
+}
+
+.neon-text { color: var(--accent-cyan); }
+.neon-border { border-color: var(--border-accent) !important; }
+.font-mono { font-family: var(--font-mono); }
+
+/* =============================================
+   Animations & Motion
+   ============================================= */
+.fade-in { animation: fadeIn 0.3s ease both; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+.slide-in { animation: slideIn 0.25s ease both; }
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* =============================================
+   Table styles
+   ============================================= */
+.cyber-table { width: 100%; border-collapse: collapse; }
+.cyber-table th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.cyber-table td {
+  padding: 12px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+.cyber-table tr:hover td {
+  background: var(--bg-card-hover);
+}
+
+/* =============================================
+   Input / Button base styles
+   ============================================= */
+.cyber-input {
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.cyber-input:focus {
+  border-color: rgba(0,194,255,0.5);
+  box-shadow: 0 0 0 3px rgba(0,194,255,0.1);
+}
+.cyber-input::placeholder { color: var(--text-dim); }
+
+.btn-primary {
+  background: linear-gradient(135deg, #00c2ff, #2563eb);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0,194,255,0.3);
+}
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 6px 12px;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-ghost:hover { border-color: rgba(0,194,255,0.4); color: var(--text-primary); }
+
+.btn-danger {
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 8px;
+  padding: 6px 12px;
+  color: #ef4444;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-danger:hover { background: rgba(239,68,68,0.2); }

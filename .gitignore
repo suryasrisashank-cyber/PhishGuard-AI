@@ -1,0 +1,61 @@
+# Virtual environments & Python
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Node & Frontend
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+build/
+.npm/
+/package-lock.json
+
+# Environment files (keep .env.example tracked)
+.env
+.env.local
+.env.*.local
+frontend/.env
+frontend/.env.local
+
+# Databases & logs
+*.db
+*.sqlite
+*.sqlite3
+phishguard.db
+*.log
+logs/
+cf_backend.log
+cf_frontend.log
+pip_install.log
+
+# Binaries & Temporary Files
+cloudflared.exe
+*.exe
+BACKEND_CLOUDFLARE_URL.txt
+BACKEND_TUNNEL_URL.txt
+BACKEND_URL.txt
+FRONTEND_URL.txt
+PUBLIC_URLS.txt
+tmp_out.txt
+pip_install_readable.txt
+tmp_*.py
+run_all.py
+run_tunnels.py
+run_cloudflare_tunnels.py
+backend_tunnel_daemon.py
+check_health.py
+
+# Embedded directories
+my_portfolio.com/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
