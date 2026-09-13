@@ -28,7 +28,11 @@ class SplunkService:
     """Manages secure communication with Splunk HTTP Event Collector (HEC)."""
 
     def __init__(self):
-        self.hec_url = (settings.splunk_hec_url or "").strip().rstrip("/")
+        raw_url = (settings.splunk_hec_url or "").strip().rstrip("/")
+        for suffix in ["/services/collector/event", "/services/collector/raw", "/services/collector"]:
+            if raw_url.endswith(suffix):
+                raw_url = raw_url[:-len(suffix)].rstrip("/")
+        self.hec_url = raw_url
         self.token = (settings.splunk_hec_token or "").strip()
         self.index = (settings.splunk_index or "phishguard").strip()
         self.default_sourcetype = (settings.splunk_sourcetype or SOURCETYPE_SCAN).strip()

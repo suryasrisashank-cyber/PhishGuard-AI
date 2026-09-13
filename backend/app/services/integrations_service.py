@@ -26,6 +26,9 @@ STATUS_ERROR = "ERROR"
 def check_splunk_status() -> dict[str, Any]:
     """Test Splunk HTTP Event Collector (HEC) operational state."""
     hec_url = (settings.splunk_hec_url or "").strip().rstrip("/")
+    for suffix in ["/services/collector/event", "/services/collector/raw", "/services/collector"]:
+        if hec_url.endswith(suffix):
+            hec_url = hec_url[:-len(suffix)].rstrip("/")
     token = (settings.splunk_hec_token or "").strip()
 
     if not hec_url or not token:
