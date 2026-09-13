@@ -506,17 +506,23 @@ def check_scapy_status() -> dict[str, Any]:
 
 
 def get_all_integration_diagnostics() -> list[dict[str, Any]]:
-    """Return runtime diagnostic reports for all 11 security integrations."""
-    return [
-        check_splunk_status(),
-        check_virustotal_status(),
-        check_abuseipdb_status(),
-        check_otx_status(),
-        check_urlhaus_status(),
-        check_dns_status(),
-        check_rdap_whois_status(),
-        check_yara_status(),
-        check_tshark_status(),
-        check_pyshark_status(),
-        check_scapy_status(),
+    """Return runtime diagnostic reports for all 11 security integrations executed in parallel."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    probes = [
+        check_splunk_status,
+        check_virustotal_status,
+        check_abuseipdb_status,
+        check_otx_status,
+        check_urlhaus_status,
+        check_dns_status,
+        check_rdap_whois_status,
+        check_yara_status,
+        check_tshark_status,
+        check_pyshark_status,
+        check_scapy_status,
     ]
+    with ThreadPoolExecutor(max_workers=len(probes)) as executor:
+        futures = [executor.submit(p) for p in probes]
+        return [f.result() for f in futures]
+
