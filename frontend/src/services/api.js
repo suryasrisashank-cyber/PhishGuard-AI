@@ -1,7 +1,6 @@
 /**
- * PhishGuard AI 2.0 — Axios API Client
- * All backend communication goes through this module.
- * Never hardcode API keys here — use environment variables.
+ * PhishGuard AI 3.0 — Axios API Client
+ * Centralized communication layer for all SOC analysis, telemetry, and SIEM endpoints.
  */
 import axios from 'axios';
 import { API_URL } from '../lib/constants.js';
@@ -41,8 +40,12 @@ api.interceptors.response.use(
 );
 
 // ============================================================
-// API Methods
+// API Services
 // ============================================================
+
+export const systemApi = {
+  getIntegrations: () => api.get('/system/integrations'),
+};
 
 export const dashboardApi = {
   getStats: () => api.get('/dashboard/stats'),
@@ -58,10 +61,53 @@ export const scansApi = {
     form.append('file', file);
     return api.post('/scans/email/file', form, { headers: { 'Content-Type': 'multipart/form-data' } });
   },
+  scanFile: (file) => {
+    const form = new FormData();
+    form.append('file', file);
+    return api.post('/scans/file', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
+  scanPcap: (file) => {
+    const form = new FormData();
+    form.append('file', file);
+    return api.post('/scans/pcap', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
   list: (params = {}) => api.get('/scans', { params }),
   get: (id) => api.get(`/scans/${id}`),
   updateStatus: (id, status) => api.patch(`/scans/${id}/status`, { investigation_status: status }),
   updateNotes: (id, notes) => api.patch(`/scans/${id}/notes`, { analyst_notes: notes }),
+};
+
+export const splunkApi = {
+  getStatus: () => api.get('/splunk/status'),
+  testConnection: () => api.post('/splunk/test'),
+  sendEvent: (data, eventType = 'manual_event', sourcetype = null) =>
+    api.post('/splunk/send', { data, event_type: eventType, sourcetype }),
+  getSplExamples: () => api.get('/splunk/spl-examples'),
+};
+
+export const iocsApi = {
+  list: (params = {}) => api.get('/iocs', { params }),
+  get: (id) => api.get(`/iocs/${id}`),
+  correlate: (value) => api.get(`/iocs/correlate/${encodeURIComponent(value)}`),
+  create: (data) => api.post('/iocs', data),
+  getExportUrl: () => `${API_URL}/iocs/export/csv`,
+};
+
+export const investigationsApi = {
+  list: (params = {}) => api.get('/investigations', { params }),
+  get: (id) => api.get(`/investigations/${id}`),
+  createFromScan: (scanId, title = null) => api.post('/investigations/from-scan', { scan_id: scanId, title }),
+  update: (id, data) => api.patch(`/investigations/${id}`, data),
+  attachBurpFinding: (id, finding) => api.post(`/investigations/${id}/burp-finding`, finding),
+  forwardToSplunk: (id) => api.post(`/investigations/${id}/splunk`),
+};
+
+export const alertsApi = {
+  list: (params = {}) => api.get('/alerts', { params }),
+};
+
+export const campaignsApi = {
+  list: () => api.get('/campaigns'),
 };
 
 export const screenshotsApi = {
@@ -73,7 +119,9 @@ export const screenshotsApi = {
 };
 
 export const threatsApi = {
+  getProvidersStatus: () => api.get('/threats/providers/status'),
   lookup: (domain) => api.get(`/threats/lookup?domain=${encodeURIComponent(domain)}`),
+  enrich: (type, value) => api.get(`/threats/enrich/${encodeURIComponent(type)}/${encodeURIComponent(value)}`),
 };
 
 export const reportsApi = {

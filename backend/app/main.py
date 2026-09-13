@@ -1,26 +1,56 @@
 """
-PhishGuard AI 2.0 — FastAPI Application Entry Point
+PhishGuard AI 3.0 — FastAPI Application Entry Point
+Defensive SOC Investigation & Threat Intelligence Orchestration Platform
 """
 import logging
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .api.routers import auth, scans, dashboard, ml, threat_intelligence, screenshots, reports, ai_explain
+from .api.routers import (
+    auth,
+    scans,
+    dashboard,
+    ml,
+    threat_intelligence,
+    screenshots,
+    reports,
+    ai_explain,
+    system,
+    splunk,
+    iocs,
+    investigations,
+    alerts,
+    campaigns,
+)
 from .db.database import init_db
 from .utils.logger import setup_logging
 
 setup_logging()
 logger = logging.getLogger(__name__)
 
+
+# Ensure database tables exist on module import (required for TestClient and worker processes)
+init_db()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    logger.info("PhishGuard AI 3.0 database & services initialized")
+    yield
+
+
 app = FastAPI(
-    title="PhishGuard AI 2.1",
-    version="2.1.0",
+    title="PhishGuard AI 3.0 — Real-World SOC Platform",
+    version="3.0.0",
     description=(
-        "AI-Assisted Phishing Detection & Threat Intelligence Platform. "
-        "Detect → Investigate → Enrich → Classify → Respond → Report. "
-        "Uses heuristic analysis — not ML inference unless explicitly documented."
+        "Defensive SOC investigation & threat-intelligence platform. "
+        "Integrates with Splunk SIEM, VirusTotal, AbuseIPDB, AlienVault OTX, URLhaus, "
+        "DNS/RDAP, YARA, Scapy PCAP analysis, and MITRE ATT&CK."
     ),
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -30,10 +60,6 @@ app.add_middleware(
         "http://127.0.0.1:3000",
         "http://localhost:5173",
         "http://127.0.0.1:5173",
-        "https://73e94b289a7d59.lhr.life",
-        "https://f8213bfef6cd14.lhr.life",
-        "https://mega-checklist-baghdad-stack.trycloudflare.com",
-        "https://came-africa-tried-electrical.trycloudflare.com",
     ],
     allow_origin_regex=r"^https?://([a-zA-Z0-9-]+\.(trycloudflare\.com|lhr\.life|loca\.lt)|localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+)(:\d+)?$",
     allow_credentials=True,
@@ -41,32 +67,34 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Register all routers
+# Register all SOC routers
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(scans.router, prefix="/api/scans", tags=["Scans"])
 app.include_router(dashboard.router, prefix="/api/dashboard", tags=["Dashboard"])
-app.include_router(ml.router, prefix="/api/ml", tags=["Machine Learning"])
+app.include_router(system.router, prefix="/api/system", tags=["System & Integrations"])
 app.include_router(threat_intelligence.router, prefix="/api/threats", tags=["Threat Intelligence"])
-app.include_router(screenshots.router, prefix="/api/screenshots", tags=["Screenshots"])
+app.include_router(splunk.router, prefix="/api/splunk", tags=["Splunk SIEM"])
+app.include_router(iocs.router, prefix="/api/iocs", tags=["IOC Engine"])
+app.include_router(investigations.router, prefix="/api/investigations", tags=["Investigations"])
+app.include_router(alerts.router, prefix="/api/alerts", tags=["SOC Alerts"])
+app.include_router(campaigns.router, prefix="/api/campaigns", tags=["Threat Campaigns"])
 app.include_router(reports.router, prefix="/api/reports", tags=["Reports"])
 app.include_router(ai_explain.router, prefix="/api/ai", tags=["AI Explanation"])
-
-
-@app.on_event("startup")
-def startup_event() -> None:
-    init_db()
-    logger.info("PhishGuard AI 2.0 started successfully")
+app.include_router(screenshots.router, prefix="/api/screenshots", tags=["Screenshots"])
+app.include_router(ml.router, prefix="/api/ml", tags=["Machine Learning"])
 
 
 @app.get("/")
 def home() -> dict:
     return {
-        "message": "PhishGuard AI 2.1 is running",
+        "service": "PhishGuard AI",
+        "version": "3.0.0",
+        "role": "Defensive SOC Investigation & Threat Intelligence Platform",
+        "workflow": "Detect → Investigate → Enrich → Classify → Respond → Report",
         "status": "online",
-        "version": "2.0.0",
-        "workflow": "Detect -> Investigate -> Enrich -> Classify -> Respond -> Report",
         "docs": "/docs",
         "health": "/health",
+        "integrations_status": "/api/system/integrations",
     }
 
 
@@ -74,6 +102,7 @@ def home() -> dict:
 def health() -> dict:
     return {
         "status": "ok",
-        "service": "phishguard-ai-2.1",
-        "version": "2.0.0",
+        "service": "phishguard-ai",
+        "version": "3.0.0",
+        "database": "online",
     }

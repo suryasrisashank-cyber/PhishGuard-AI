@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import PageHeader from '../components/ui/PageHeader.jsx';
 import GlassCard from '../components/ui/GlassCard.jsx';
+import ThreatBadge from '../components/ui/ThreatBadge.jsx';
 import { threatsApi } from '../services/api.js';
-import { Shield, Search, Globe, Server, AlertCircle } from 'lucide-react';
+import { Shield, Search, Globe, Server, AlertCircle, Activity, ExternalLink, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function ThreatIntelPage() {
@@ -34,130 +36,113 @@ export default function ThreatIntelPage() {
   };
 
   return (
-    <div>
+    <div className="space-y-6">
       <PageHeader
-        title="Threat Intelligence Enrichment"
-        subtitle="Passive DNS discovery, MX routing, authoritative WHOIS lookup & threat feed status"
+        title="Multi-Provider Threat Intelligence"
+        subtitle="Live reputation, DNS mapping, WHOIS/RDAP lifecycle, and malware feed correlation across VirusTotal, AlienVault OTX, URLhaus, and AbuseIPDB."
+        action={
+          <Link
+            to="/system/integrations"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-cyber-blue/10 border border-cyber-blue/30 text-cyber-blue hover:bg-cyber-blue/20 transition text-sm font-medium"
+          >
+            <Activity size={14} />
+            Integration Diagnostics
+          </Link>
+        }
       />
 
-      <GlassCard style={{ padding: 24, marginBottom: 24 }}>
+      <GlassCard className="p-6">
         <form onSubmit={handleLookup}>
-          <div style={{ display: 'flex', gap: 12 }}>
-            <div style={{ position: 'relative', flex: 1 }}>
+          <div className="flex gap-3">
+            <div className="relative flex-1">
               <input
                 type="text"
-                className="cyber-input"
-                placeholder="Domain or Hostname (e.g. suspicious-bank-alert.xyz)"
+                className="w-full bg-slate-950 border border-white/10 rounded-lg px-4 py-2.5 pl-10 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyber-blue/50"
+                placeholder="Domain, IP, or Hostname (e.g. suspicious-update.xyz)"
                 value={domain}
                 onChange={(e) => setDomain(e.target.value)}
                 disabled={loading}
-                style={{ paddingLeft: 42 }}
               />
-              <Search size={18} color="#64748b" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
+              <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
             </div>
-            <button type="submit" className="btn-primary" disabled={loading || !domain.trim()}>
-              {loading ? 'Querying...' : 'Enrich Domain'}
+            <button
+              type="submit"
+              className="btn-primary px-5 py-2.5 rounded-lg text-sm font-semibold disabled:opacity-50"
+              disabled={loading || !domain.trim()}
+            >
+              {loading ? 'Querying Feeds...' : 'Enrich Indicator'}
             </button>
           </div>
         </form>
       </GlassCard>
 
       {error && (
-        <div style={{
-          padding: 16, borderRadius: 10, background: 'rgba(239,68,68,0.1)',
-          border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444', marginBottom: 20,
-          display: 'flex', alignItems: 'center', gap: 10, fontSize: 13,
-        }}>
+        <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm flex items-center gap-2">
           <AlertCircle size={18} />
           <span>{error}</span>
         </div>
       )}
 
       {data && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          {/* DNS Records */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
-            <GlassCard style={{ padding: 20 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <Server size={18} color="#00c2ff" />
-                <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#f1f5f9' }}>A Records (IP Addresses)</h3>
+        <div className="space-y-6">
+          {/* Consensus Overview Card */}
+          <GlassCard className="p-5 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <span className="text-[11px] font-mono text-slate-400 uppercase">INDICATOR</span>
+              <h2 className="text-lg font-bold text-white font-mono mt-0.5">{data.indicator}</h2>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-right text-xs font-mono">
+                <span className="text-slate-400 block text-[10px]">CONSENSUS</span>
+                <span className="font-bold text-white">{data.consensus_verdict}</span>
               </div>
-              {data.ips && data.ips.length > 0 ? (
-                <ul style={{ margin: 0, paddingLeft: 18, color: '#94a3b8', fontSize: 13, fontFamily: 'var(--font-mono)' }}>
-                  {data.ips.map((ip, i) => <li key={i} style={{ marginBottom: 4 }}>{ip}</li>)}
-                </ul>
-              ) : (
-                <p style={{ margin: 0, fontSize: 13, color: '#64748b' }}>No A records found</p>
-              )}
-            </GlassCard>
-
-            <GlassCard style={{ padding: 20 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <Globe size={18} color="#7c3aed" />
-                <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#f1f5f9' }}>MX Mail Exchanges</h3>
-              </div>
-              {data.mx_records && data.mx_records.length > 0 ? (
-                <ul style={{ margin: 0, paddingLeft: 18, color: '#94a3b8', fontSize: 13, fontFamily: 'var(--font-mono)' }}>
-                  {data.mx_records.map((mx, i) => <li key={i} style={{ marginBottom: 4 }}>{mx}</li>)}
-                </ul>
-              ) : (
-                <p style={{ margin: 0, fontSize: 13, color: '#64748b' }}>No MX records located</p>
-              )}
-            </GlassCard>
-          </div>
-
-          {/* WHOIS Data */}
-          <GlassCard style={{ padding: 20 }}>
-            <h3 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 700, color: '#f1f5f9' }}>WHOIS Registration Data</h3>
-            {data.whois && !data.whois.error ? (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14 }}>
-                {[
-                  { label: 'Registrar', val: data.whois.registrar },
-                  { label: 'Created On', val: data.whois.creation_date },
-                  { label: 'Expires On', val: data.whois.expiration_date },
-                  { label: 'Country', val: data.whois.country },
-                  { label: 'Organization', val: data.whois.org },
-                ].map(({ label, val }) => (
-                  <div key={label} style={{ padding: 12, borderRadius: 8, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                    <div style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase', marginBottom: 4 }}>{label}</div>
-                    <div style={{ fontSize: 13, color: '#f1f5f9', wordBreak: 'break-all' }}>{String(val || 'N/A')}</div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p style={{ color: '#64748b', fontSize: 13, margin: 0 }}>WHOIS data not available or request blocked.</p>
-            )}
+              <ThreatBadge verdict={data.consensus_verdict === 'MALICIOUS' ? 'Malicious' : (data.consensus_verdict === 'SUSPICIOUS' ? 'Suspicious' : 'Safe')} />
+            </div>
           </GlassCard>
 
-          {/* External Threat Feeds Status */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-            <GlassCard style={{ padding: 20 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <Shield size={16} color="#64748b" />
-                <h4 style={{ margin: 0, fontSize: 14, color: '#f1f5f9' }}>VirusTotal Threat Engine</h4>
-              </div>
-              {data.virustotal?.status === 'configured' ? (
-                <div style={{ fontSize: 13, color: '#94a3b8' }}>
-                  Malicious: {data.virustotal.malicious} | Suspicious: {data.virustotal.suspicious} | Harmless: {data.virustotal.harmless}
-                </div>
-              ) : (
-                <div style={{ fontSize: 12, color: '#64748b', lineHeight: 1.5 }}>
-                  <span style={{ color: '#f59e0b', fontWeight: 600 }}>VirusTotal — Not configured</span>
-                  <br />Set VIRUS_TOTAL_API_KEY in backend .env to enable multi-engine antivirus reputation scans.
-                </div>
-              )}
-            </GlassCard>
+          {/* Provider Telemetry Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {data.sources?.map((source, idx) => (
+              <GlassCard key={idx} className="p-5 flex flex-col justify-between space-y-3">
+                <div>
+                  <div className="flex items-start justify-between gap-2 border-b border-white/5 pb-2">
+                    <span className="text-sm font-semibold text-white">{source.provider}</span>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold uppercase ${
+                      source.provider_verdict === 'MALICIOUS' ? 'bg-red-500/10 text-red-400 border border-red-500/30' :
+                      source.provider_verdict === 'SUSPICIOUS' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30' :
+                      source.provider_verdict === 'BENIGN' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' :
+                      source.provider_verdict === 'NOT CONFIGURED' ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/30' :
+                      'bg-slate-500/10 text-slate-400 border border-slate-500/30'
+                    }`}>
+                      {source.provider_verdict}
+                    </span>
+                  </div>
 
-            <GlassCard style={{ padding: 20 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <Shield size={16} color="#64748b" />
-                <h4 style={{ margin: 0, fontSize: 14, color: '#f1f5f9' }}>AbuseIPDB Threat Feed</h4>
-              </div>
-              <div style={{ fontSize: 12, color: '#64748b', lineHeight: 1.5 }}>
-                <span style={{ color: '#f59e0b', fontWeight: 600 }}>AbuseIPDB — Not configured</span>
-                <br />Configure ABUSEIPDB_API_KEY to verify IP attack history and malicious reporting ratios.
-              </div>
-            </GlassCard>
+                  <p className="text-xs text-slate-300 mt-2 leading-relaxed">
+                    {source.normalized_interpretation}
+                  </p>
+
+                  {source.raw_reputation && (
+                    <div className="mt-3 p-2 rounded bg-black/30 border border-white/5 text-[11px] font-mono text-slate-400 space-y-0.5">
+                      {Object.entries(source.raw_reputation).map(([k, v]) => (
+                        <div key={k} className="flex justify-between">
+                          <span className="text-slate-500">{k}:</span>
+                          <span className="text-slate-200 truncate max-w-[200px]">{JSON.stringify(v)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-slate-500">
+                  <span className="flex items-center gap-1">
+                    <Clock size={10} />
+                    {source.retrieval_timestamp ? new Date(source.retrieval_timestamp).toLocaleTimeString() : 'N/A'}
+                  </span>
+                  <span>Confidence: {source.confidence ? `${source.confidence}%` : 'N/A'}</span>
+                </div>
+              </GlassCard>
+            ))}
           </div>
         </div>
       )}

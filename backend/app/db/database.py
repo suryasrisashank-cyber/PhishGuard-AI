@@ -50,11 +50,11 @@ def _migrate_sqlite_columns() -> None:
 
 
 def init_db() -> None:
-    from ..models import user, scan  # noqa: F401 — registers models with SQLAlchemy metadata
+    from ..models import user, scan, ioc, investigation  # noqa: F401 — registers models with SQLAlchemy metadata
 
     Base.metadata.create_all(bind=engine)
     _migrate_sqlite_columns()
-    logger.info("PhishGuard AI 2.0 database initialized")
+    logger.info("PhishGuard AI database initialized")
 
 
 def get_db():

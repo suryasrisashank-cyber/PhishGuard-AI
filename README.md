@@ -1,136 +1,234 @@
-# PhishGuard AI 2.1
+# PhishGuard AI 3.0 — Real-World SOC Platform
 
-**AI-Powered Phishing Detection & Threat Intelligence SOC Investigation Platform**
+**Defensive SOC Investigation & Threat Intelligence Platform with Real Security Tool Integrations**
 
-PhishGuard AI 2.1 is an enterprise-grade Security Operations Center (SOC) investigation platform designed for Tier-1/Tier-2 analyst incident triage, automated enrichment, heuristic forensics, and incident reporting.
+$$\text{DETECT} \longrightarrow \text{INVESTIGATE} \longrightarrow \text{ENRICH} \longrightarrow \text{CLASSIFY} \longrightarrow \text{RESPOND} \longrightarrow \text{REPORT} \longrightarrow \text{SIEM}$$
 
-$$\text{DETECT} \longrightarrow \text{INVESTIGATE} \longrightarrow \text{ENRICH} \longrightarrow \text{CLASSIFY} \longrightarrow \text{RESPOND} \longrightarrow \text{REPORT}$$
+PhishGuard AI 3.0 is a realistic, defensive Security Operations Center (SOC) investigation platform engineered for Tier-1/Tier-2 analyst workflows, forensic artifact analysis, indicator correlation, and SIEM event indexing.
 
----
-
-## Why This Project is SOC-Relevant
-
-In a real Security Operations Center, analysts do not rely on opaque "black box" machine learning models that cannot explain why a URL was blocked. Every containment action requires verifiable technical evidence, reproducible risk scoring, and alignment with threat intelligence frameworks.
-
-PhishGuard AI 2.1 was engineered around this operational reality:
-
-| SOC Phase | Operational Implementation |
-|---|---|
-| **1. DETECT** | 10-stage deterministic pipeline executing deep URL normalization, entropy scoring, brand impersonation detection, and homoglyph analysis. |
-| **2. INVESTIGATE** | 3-column Investigation Dossier (`/investigation/:id`) separating case metadata, forensic evidence breakdown, and risk metrics. |
-| **3. ENRICH** | Passive DNS lookups (A, MX, TXT records) and authoritative WHOIS data without exposing internal infrastructure. |
-| **4. CLASSIFY** | Independent **Risk Score** ($0-100$) and **Confidence Score** ($0-100$), coupled with a 5-tier Severity Matrix and strict evidence-based MITRE ATT&CK technique mapping. |
-| **5. RESPOND** | Actionable, non-destructive SOC playbooks (blocking recommendations, SIEM search queries, credential rotation notices). |
-| **6. REPORT** | Automated executive incident summaries, structured IOC export (JSON), and remediation checklists. |
+It serves as the **orchestration and investigation layer** connecting detection modalities (URLs, websites, emails, binary files, PCAP network captures) with threat intelligence feeds, MITRE ATT&CK techniques, and Splunk Enterprise/Cloud.
 
 ---
 
-## Key Features
+## 🚨 Core Architectural Principles
 
-### 1. Interactive 3D Threat Telemetry
-- **Global Threat Activity Globe**: Interactive 3D Three.js rotating sphere with latitude coordinate rings, telemetry threat nodes, connection arcs, mouse drag rotation, and node hover detection.
-- **Graceful WebGL Fallback**: Automatically falls back to lightweight SVG/CSS topology visualizer if WebGL is unsupported or disabled.
-
-### 2. Heuristic Detection Engine (v2.1)
-- **Shannon Entropy Analysis**: Flags algorithmically generated domains (DGA) with entropy $> 3.5$.
-- **Punycode & Homoglyph Detection**: Identifies `xn--` prefixes and Cyrillic/Unicode lookalike characters.
-- **Brand Impersonation Knowledge Base**: 25+ major targets (PayPal, Microsoft, Google, Apple, Amazon, Chase, Wells Fargo, etc.) flagged when appearing outside official assets.
-- **SSRF Defense Guard**: Validates public IP destinations; automatically blocks access to localhost, `127.0.0.1`, private IP subnets (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`), and link-local metadata endpoints (`169.254.169.254`).
-
-### 3. Categorized Evidence Panel
-Every check emits a typed `IndicatorItem` with impact points, rule weight, and technical evidence:
-- **DOMAIN**: Entropy, brand matching, TLD reputation, punycode.
-- **NETWORK**: Resolved IPs, non-standard port bindings, DNS records.
-- **URL**: Length, deep percent-encoding, open redirect query parameters.
-- **CONTENT**: Password fields, external form destinations, hidden iframes.
-- **EMAIL**: Urgency triggers, credential harvesting language, SPF/DKIM/DMARC headers.
-- **AUTHENTICATION**: Sender / Reply-To domain mismatches.
-- **THREAT INTELLIGENCE**: Authoritative WHOIS registrar and passive DNS.
-
-### 4. AI Security Explanation Layer
-- Translates complex technical evidence into plain-English SOC briefings.
-- **Integrity Rule**: Derived strictly from deterministic scanner findings — never invents unverified reputation or threat intelligence.
-- Transparently labeled as **"AI-assisted explanation"**.
-
-### 5. SOC Case Management Workflow
-- Case progression: `NEW` $\to$ `INVESTIGATING` $\to$ `CONFIRMED_THREAT` $\to$ `RESPONDING` $\to$ `RESOLVED` (or `FALSE_POSITIVE`).
-- Persistent case status transitions and analyst notes stored in SQLite.
-- IOC management table with type filtering, searching, copying, and JSON export.
-
-### 6. User Experience & Aesthetics
-- Dark SOC theme (`#020617`) with optional light theme toggle.
-- Global Command Palette accessible anywhere via **`Ctrl + K`**.
-- Accessible keyboard shortcuts and `prefers-reduced-motion` compliance.
+1. **Defensive Security Only**: Focused entirely on phishing triage, threat detection, indicator extraction, static forensic inspection, and incident containment. No offensive exploitation or campaign generation.
+2. **Real Integrations Only — No Mock Telemetry**:
+   - Every security tool is classified at runtime as one of: `CONNECTED`, `AVAILABLE`, `NOT CONFIGURED`, `UNAVAILABLE`, or `ERROR`.
+   - If an API key or local binary is absent, the system displays `NOT CONFIGURED` or `UNAVAILABLE` rather than fabricating responses.
+   - Endpoint `GET /api/system/integrations` provides an unauthenticated, zero-secret diagnostic health check across all 11 security integrations.
+3. **Cost-Aware & Accessible**:
+   - Works fully out of the box using built-in deterministic heuristic engines, free public feeds (abuse.ch URLhaus, DNS, RDAP/WHOIS), and Python-native offline PCAP analysis (`scapy`).
+   - Paid APIs (VirusTotal, AbuseIPDB, AlienVault OTX) and enterprise SIEMs (Splunk) are optional plugins that activate seamlessly when credentials are provided.
 
 ---
 
-## Quick Start
+## 🏛️ System Architecture
 
-### 1. Backend (FastAPI + SQLite)
-Ensure the Python virtualenv is active:
-```powershell
-.venv\Scripts\python.exe -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload
+```text
+                                  PHISHGUARD AI (v3.0)
+                                           |
+       +-----------------------------------+-----------------------------------+
+       |                                   |                                   |
+ DETECTION ENGINES                  THREAT ENRICHMENT                      SIEM INTEGRATION
+       |                                   |                                   |
+ +-----+-----+-----+-----+           +-----+-----+-----+-----+                 |
+ |     |     |     |     |           |     |     |     |     |                 |
+URL  Email Web  File  PCAP          VT   OTX AbuseIPDB DNS URLhaus           Splunk HEC
+ |     |     |     |     |           |     |     |     |     |                 |
+ +-----+-----+-----+-----+-----------+-----+-----+-----+-----+-----------------+
+                                           |
+                                 Normalized IOC Engine
+                               (Domain, IP, URL, Hash)
+                                           |
+                                 Cross-Scan Correlation
+                                           |
+                                Heuristic Risk Engine
+                                           |
+                           Confidence Score + Severity Matrix
+                                           |
+                                 MITRE ATT&CK Mapping
+                                           |
+                             SOC Case Management Workflow
+                        (NEW → TRIAGED → INVESTIGATING → CONTAINED)
+                                           |
+                            Burp Suite Finding Attachment
+                                           |
+                             Executive & Technical Reports
 ```
-- API Health: `http://127.0.0.1:8000/health`
-- Interactive OpenAPI Docs: `http://127.0.0.1:8000/docs`
 
-### 2. Frontend (React 18 + Vite 5 + Tailwind CSS)
-From the `frontend/` directory (run via `cmd /c` on Windows):
-```cmd
+---
+
+## 🛠️ Real Security Tools Integrated
+
+| Tool / Provider | Integration Method | Role in SOC Workflow | Default Runtime Status |
+|---|---|---|---|
+| **Splunk Enterprise / Cloud** | HTTP Event Collector (HEC) | Centralized security event indexing, alert correlation, and SPL queries. | `NOT CONFIGURED` (Until HEC URL/Token configured) |
+| **VirusTotal** | REST API v3 | Multi-engine URL, domain, IP, and file hash reputation analysis. | `NOT CONFIGURED` (Optional API key) |
+| **AbuseIPDB** | REST API v2 | IP address abuse confidence scoring and attack history reports. | `NOT CONFIGURED` (Optional API key) |
+| **AlienVault OTX** | Direct REST API | Community threat pulse correlation and targeted malware families. | `NOT CONFIGURED` (Optional API key) |
+| **URLhaus (abuse.ch)** | Official Public API | Real-time malicious URL and malware hosting infrastructure lookup. | `CONNECTED` (Free public feed) |
+| **DNS Engine (`dnspython`)** | Native DNS Resolver | Passive A, AAAA, MX, TXT (SPF/DMARC), and NS record queries. | `CONNECTED` (Active) |
+| **RDAP / WHOIS** | `python-whois` | Domain registrar, lifecycle age, and young domain (<30 days) detection. | `AVAILABLE` (Active) |
+| **YARA (`yara-python`)** | Static Rule Compiler | Offline binary signature matching and rule compilation. | `UNAVAILABLE` (If package/rules uninstalled) |
+| **tshark (Wireshark CLI)** | Subprocess / CLI | Fast packet capture dissecting and deep protocol parsing. | `UNAVAILABLE` (If Wireshark CLI not on PATH) |
+| **PyShark** | Python Wrapper | Programmatic packet dissections backed by tshark. | `UNAVAILABLE` (Requires tshark binary) |
+| **Scapy** | Pure Python Engine | Defensive offline PCAP parsing (conversations, DNS, HTTP, ports). | `AVAILABLE` (Installed & active) |
+| **Burp Suite** | External Tool Evidence | Manual authorized web testing. Findings attached to investigation cases. | Documented external tool |
+
+---
+
+## 🔒 Security Hardening & Strict SSRF Guard
+
+Server-side URL fetching is protected by multi-layer SSRF validation (`_validate_safe_url_for_fetch`):
+- **Loopback Blocking**: `127.0.0.1`, `localhost`, `::1`, `0.0.0.0`.
+- **Private Subnets (RFC 1918)**: `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`.
+- **Link-Local & Cloud Metadata**: `169.254.169.254` (AWS, GCP, Azure metadata), `169.254.0.0/16`.
+- **Internal Suffixes**: `.local`, `.internal`, `.lan`, `.corp`.
+- **Protocol Whitelist**: Only `http://` and `https://` permitted; `file://`, `gopher://`, `ftp://` strictly rejected.
+- **Pre-Resolution Verification**: Validates resolved IP addresses before initiating HTTP socket requests.
+
+---
+
+## 🚀 Quickstart & Installation
+
+### 1. Prerequisites
+- Python 3.10+ (tested on Python 3.11 and 3.14)
+- Node.js 18+ & npm
+
+### 2. Backend Setup
+```bash
+# Clone the repository
+git clone https://github.com/suryasrisashank-cyber/PhishGuard-AI.git
+cd PhishGuard-AI
+
+# Create and activate virtual environment
+python -m venv .venv
+# On Windows:
+.\.venv\Scripts\activate
+# On Linux/macOS:
+source .venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Copy environment template
+cp .env.example .env
+
+# Run FastAPI backend
+uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### 3. Frontend Setup
+```bash
 cd frontend
-cmd /c npm run dev
+
+# Install node dependencies
+npm install
+
+# Start Vite development server
+npm run dev
 ```
-- Web Application: `http://localhost:3000`
+Frontend runs at `http://localhost:5173` (or `3000`), proxying to backend at `http://localhost:8000`.
 
 ---
 
-## Running Tests
+## ⚙️ Environment Configuration (`.env`)
 
-Run the backend automated test suite:
-```powershell
-.venv\Scripts\python.exe -m pytest backend/tests/test_api.py -v
-```
-*(All 9 integration tests pass, covering URL scans, email heuristics, status patching, reports, AI explanations, and SSRF guards).*
+```ini
+# Database
+DATABASE_URL=sqlite:///./phishguard.db
 
-Build the production frontend bundle:
-```cmd
-cd frontend
-cmd /c npm run build
-```
-*(Built with Vite code-splitting and dedicated Three.js, motion, and charts chunks).*
-
----
-
-## Environment Variables
-
-Create `.env` in `backend/`:
-```env
-# Optional Threat Intelligence API Keys (shown as "not configured" when omitted)
-VIRUS_TOTAL_API_KEY=""
-ABUSEIPDB_API_KEY=""
+# Frontend API URL
+VITE_API_URL=http://127.0.0.1:8000/api
 
 # Security
-SECRET_KEY="change-me-in-production"
-LOG_LEVEL="INFO"
-```
+SECRET_KEY=change-me-in-production
+ACCESS_TOKEN_EXPIRE_MINUTES=30
 
-Create `.env` in `frontend/`:
-```env
-VITE_API_URL="http://127.0.0.1:8000/api"
-VITE_DEMO_MODE="false"
+# Splunk SIEM (HTTP Event Collector)
+SPLUNK_HOST=https://splunk.internal:8088
+SPLUNK_HEC_URL=https://splunk.internal:8088
+SPLUNK_HEC_TOKEN=your-splunk-hec-token
+SPLUNK_INDEX=phishguard
+SPLUNK_SOURCETYPE=phishguard:scan
+SPLUNK_VERIFY_TLS=true
+
+# Threat Intelligence Providers (Optional)
+VIRUS_TOTAL_API_KEY=your-virustotal-api-key
+ABUSEIPDB_API_KEY=your-abuseipdb-api-key
+OTX_API_KEY=your-otx-api-key
+
+# Local Forensics
+YARA_RULES_PATH=./rules/phishing.yar
+TSHARK_PATH=C:\Program Files\Wireshark\tshark.exe
 ```
 
 ---
 
-## Security Considerations & Guardrails
+## 📊 Splunk Integration & Verified SPL Searches
 
-1. **SSRF Defense**: The website scanner strictly enforces `_validate_safe_url_for_fetch()`, resolving domains and rejecting requests to loopback addresses (`127.0.0.1`), private networks (`10.0.0.0/8`, `192.168.0.0/16`), and cloud metadata APIs (`169.254.169.254`).
-2. **Deterministic Truth**: The platform never fabricates AI confidence, reputation, or threat intelligence.
-3. **No Destructive Actions**: Response recommendations provide actionable guidance for firewall and SIEM operators without auto-executing destructive commands.
+PhishGuard normalizes and dispatches security telemetry to Splunk HEC using structured sourcetypes:
+- `phishguard:scan` — Detection results across all modalities
+- `phishguard:alert` — High & Critical security alerts
+- `phishguard:ioc` — Discovered indicators of compromise
+- `phishguard:investigation` — Case lifecycle transitions and analyst notes
+- `phishguard:pcap` — Network conversation and packet telemetry
+- `phishguard:file` — Static binary hashes and string evidence
+
+### Example SPL Queries:
+
+**Critical Phishing Detections:**
+```spl
+index=phishguard sourcetype="phishguard:scan" severity="CRITICAL"
+```
+
+**High-Risk Target Domain Aggregation:**
+```spl
+index=phishguard sourcetype="phishguard:scan" risk_score>=75 | stats count by target, severity | sort - count
+```
+
+**MITRE ATT&CK Technique Distribution:**
+```spl
+index=phishguard sourcetype="phishguard:scan" | stats count by mitre_techniques{}
+```
+
+**Detection Velocity Over Time:**
+```spl
+index=phishguard sourcetype="phishguard:scan" | timechart span=1h count by verdict
+```
+
+**Correlated Malicious Network Indicators:**
+```spl
+index=phishguard sourcetype="phishguard:pcap" | stats count by destination_ip, protocol
+```
 
 ---
 
-## Known Limitations
+## 🧪 Automated Testing
 
-- **Screenshot Analysis**: Uses heuristic metadata and pixel statistics only; does not perform optical character recognition (OCR) or computer vision classification.
-- **PDF Export**: Incident reports provide complete JSON export and print-ready previews; automated PDF binary generation is marked as `"Coming Soon"`.
+PhishGuard includes a complete 38-test automated verification suite covering unit detection, SSRF defenses, integration status reports, and case workflows:
+
+```bash
+# Run complete test suite
+python -m pytest -v
+
+# Run with quiet summary
+python -m pytest -q
+```
+**Results:** `38 passed in ~14s` with zero failures.
+
+---
+
+## 🎙️ 10 Key Talking Points for SOC Analyst Interviews
+
+1. **Defensive Engineering Over Black-Box Hype**: "I built PhishGuard to give Tier-1/Tier-2 analysts deterministic evidence, separating Risk Score ($0-100$) from Confidence Score ($0-100$) so every block action is explainable to leadership."
+2. **Strict SSRF Architecture**: "Any automated URL/website fetch presents a server-side request forgery risk. I implemented pre-resolution IP validation blocking loopbacks, RFC 1918 private subnets, and AWS/Azure cloud metadata endpoints (`169.254.169.254`)."
+3. **Graceful Integration Degradation**: "In enterprise environments, APIs go down or API quotas exhaust. PhishGuard's integration service classifies every tool at runtime (`CONNECTED`, `AVAILABLE`, `NOT CONFIGURED`, `UNAVAILABLE`, `ERROR`), ensuring zero crash states and zero fabricated responses."
+4. **Real Splunk HEC Pipeline**: "Rather than simulating SIEM logs, PhishGuard formats normalized JSON payloads with standard sourcetypes (`phishguard:scan`, `phishguard:alert`) and dispatches them via HTTP Event Collector to Splunk."
+5. **Multi-Source Threat Intelligence**: "I created an extensible provider abstraction coordinating free feeds like abuse.ch URLhaus and authoritative DNS/WHOIS alongside commercial APIs like VirusTotal, AbuseIPDB, and AlienVault OTX."
+6. **Cross-Entity IOC Correlation**: "Scans do not live in isolation. When an IOC is cataloged, the platform correlates it across historical URLs, emails, file samples, and open investigation cases."
+7. **Defensive Static File Inspection**: "The file analyzer computes cryptographic digests (SHA-256, SHA-1, MD5) and extracts static callout strings without executing arbitrary binaries on the host."
+8. **Offline PCAP Network Telemetry**: "Using Scapy and tshark bindings, analysts can inspect packet captures offline to extract DNS queries, unencrypted HTTP hosts, and anomalous port connections."
+9. **Real MITRE ATT&CK Mapping**: "Techniques like `T1566.002` (Spearphishing Link) or `T1071.004` (DNS) are mapped strictly when technical evidentiary rules fire — never randomly assigned."
+10. **Burp Suite Separation of Concerns**: "I treated Burp Suite as an external manual authorized tool. Instead of faking scanner results, analysts attach verified Burp findings directly to investigation cases as corroborating evidence."

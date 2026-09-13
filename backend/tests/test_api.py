@@ -10,12 +10,12 @@ client = TestClient(app)
 
 
 def test_health():
-    """Verify health endpoint returns status ok and version 2.x."""
+    """Verify health endpoint returns status ok and version 2.x or 3.x."""
     response = client.get("/health")
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "ok"
-    assert data["version"] in ("2.0.0", "2.1.0")
+    assert data["version"] in ("2.0.0", "2.1.0", "3.0.0")
 
 
 def test_url_scan_safe():
