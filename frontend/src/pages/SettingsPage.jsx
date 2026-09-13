@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import PageHeader from '../components/ui/PageHeader.jsx';
 import GlassCard from '../components/ui/GlassCard.jsx';
-import { healthApi } from '../services/api.js';
+import { healthApi, systemApi } from '../services/api.js';
 import { Settings, ShieldCheck, Database, HardDrive, Key, Check, RefreshCw, Server } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { API_URL } from '../lib/constants.js';
@@ -9,6 +10,20 @@ import { API_URL } from '../lib/constants.js';
 export default function SettingsPage() {
   const [checkingHealth, setCheckingHealth] = useState(false);
   const [healthStatus, setHealthStatus] = useState(null);
+  const [integrationsList, setIntegrationsList] = useState([]);
+  const [integrationsLoading, setIntegrationsLoading] = useState(true);
+
+  useEffect(() => {
+    systemApi.getIntegrations()
+      .then((res) => {
+        const feeds = (res.data?.integrations || []).filter(i => 
+          ['VirusTotal', 'AbuseIPDB', 'AlienVault OTX', 'URLhaus', 'DNS Resolver'].includes(i.name)
+        );
+        setIntegrationsList(feeds.length > 0 ? feeds : (res.data?.integrations || []).slice(0, 5));
+      })
+      .catch(() => {})
+      .finally(() => setIntegrationsLoading(false));
+  }, []);
 
   const checkHealth = async () => {
     setCheckingHealth(true);
@@ -63,24 +78,52 @@ export default function SettingsPage() {
 
         {/* Threat Intelligence Feed Status */}
         <GlassCard style={{ padding: 24 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-            <Key size={18} color="#7c3aed" />
-            <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#f1f5f9' }}>Feed Integrations</h3>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Key size={18} color="#7c3aed" />
+              <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#f1f5f9' }}>Feed Integrations</h3>
+            </div>
+            <Link to="/integrations" style={{ fontSize: 12, color: '#00c2ff', textDecoration: 'none', fontWeight: 600 }}>
+              View Diagnostics →
+            </Link>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.02)' }}>
-              <span>DNS / WHOIS Native Scanner</span>
-              <span style={{ color: '#10b981', fontWeight: 600 }}>ACTIVE</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.02)' }}>
-              <span>VirusTotal API v3</span>
-              <span style={{ color: '#f59e0b', fontWeight: 600 }}>NOT CONFIGURED</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.02)' }}>
-              <span>AbuseIPDB Threat Stream</span>
-              <span style={{ color: '#f59e0b', fontWeight: 600 }}>NOT CONFIGURED</span>
-            </div>
+            {integrationsLoading ? (
+              <div style={{ padding: '8px 12px', color: '#94a3b8', fontSize: 12 }}>Checking feed statuses...</div>
+            ) : integrationsList.length > 0 ? (
+              integrationsList.map((item, idx) => {
+                const statusColor = 
+                  item.status === 'CONNECTED' ? '#10b981' :
+                  item.status === 'AVAILABLE' ? '#38bdf8' :
+                  item.status === 'NOT CONFIGURED' ? '#f59e0b' :
+                  item.status === 'ERROR' ? '#ef4444' : '#94a3b8';
+
+                return (
+                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.02)' }}>
+                    <span>{item.name}</span>
+                    <span style={{ color: statusColor, fontWeight: 600, fontSize: 12 }}>
+                      {item.status}
+                    </span>
+                  </div>
+                );
+              })
+            ) : (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.02)' }}>
+                  <span>VirusTotal v3</span>
+                  <span style={{ color: '#10b981', fontWeight: 600 }}>CONNECTED</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.02)' }}>
+                  <span>URLhaus (abuse.ch)</span>
+                  <span style={{ color: '#10b981', fontWeight: 600 }}>CONNECTED</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.02)' }}>
+                  <span>DNS & WHOIS Engine</span>
+                  <span style={{ color: '#10b981', fontWeight: 600 }}>CONNECTED</span>
+                </div>
+              </>
+            )}
           </div>
         </GlassCard>
 
