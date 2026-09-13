@@ -44,7 +44,7 @@ const navSections = [
     title: 'THREAT INTELLIGENCE',
     items: [
       { path: '/threat-intel', icon: Shield, label: 'Threat Intel Feeds' },
-      { path: '/system/integrations', icon: Activity, label: 'Integration Diagnostics' },
+      { path: '/system/integrations', icon: Activity, label: 'System Diagnostics' },
       { path: '/iocs', icon: Database, label: 'IOC Explorer' },
       { path: '/campaigns', icon: Layers, label: 'Threat Campaigns' },
     ],

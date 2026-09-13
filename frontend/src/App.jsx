@@ -34,6 +34,9 @@ export default function App() {
           <Route path="scanner/screenshot" element={<ScreenshotAnalyzerPage />} />
           <Route path="threat-intel" element={<ThreatIntelPage />} />
           <Route path="system/integrations" element={<IntegrationsDiagnosticsPage />} />
+          <Route path="diagnostics" element={<IntegrationsDiagnosticsPage />} />
+          <Route path="integrations" element={<IntegrationsDiagnosticsPage />} />
+          <Route path="system/diagnostics" element={<IntegrationsDiagnosticsPage />} />
           <Route path="iocs" element={<IocExplorerPage />} />
           <Route path="campaigns" element={<CampaignsPage />} />
           <Route path="alerts" element={<AlertsPage />} />

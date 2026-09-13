@@ -19,6 +19,7 @@ class Settings(BaseSettings):
 
     # Threat Intelligence Providers (Real external APIs)
     virus_total_api_key: str = ""
+    virustotal_api_key: str = ""
     abuseipdb_api_key: str = ""
     otx_api_key: str = ""
 

@@ -44,7 +44,9 @@ api.interceptors.response.use(
 // ============================================================
 
 export const systemApi = {
-  getIntegrations: () => api.get('/system/integrations'),
+  getIntegrations: (probe = false) => api.get(`/system/integrations${probe ? '?probe=true' : ''}`),
+  testAllIntegrations: () => api.post('/system/integrations/test-all'),
+  testProvider: (providerId) => api.post(`/system/integrations/${encodeURIComponent(providerId)}/test`),
 };
 
 export const dashboardApi = {
@@ -142,4 +144,6 @@ export const healthApi = {
   check: () => axios.get(API_URL.startsWith('http') ? `${API_URL.replace(/\/api\/?$/, '')}/health` : '/health', { timeout: 5000 }),
 };
 
+
 export default api;
+
