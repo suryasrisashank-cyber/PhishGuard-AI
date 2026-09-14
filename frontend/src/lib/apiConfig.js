@@ -1,7 +1,10 @@
 /**
  * PhishGuard AI — Centralized API & Runtime Configuration
  * Strictly resolves API endpoints for Local Development vs Vercel Production.
- * Never defaults to localhost or 127.0.0.1 in production.
+ * Supports:
+ * 1. Runtime custom URL stored in localStorage (allows instant connection from UI)
+ * 2. Build-time environment variable VITE_API_URL
+ * 3. Local development fallback (127.0.0.1:8000)
  */
 
 const isBrowser = typeof window !== 'undefined';
@@ -17,13 +20,38 @@ export const IS_LOCAL_HOST =
 export const IS_PRODUCTION =
   import.meta.env.PROD || (!IS_LOCAL_HOST && Boolean(hostname));
 
-// Read configured VITE_API_URL
-const rawApiUrl = (import.meta.env.VITE_API_URL || '').trim();
+export function getCustomBackendUrl() {
+  if (isBrowser) {
+    try {
+      return (localStorage.getItem('PHISHGUARD_BACKEND_URL') || '').trim();
+    } catch {
+      return '';
+    }
+  }
+  return '';
+}
+
+export function setCustomBackendUrl(url) {
+  if (isBrowser) {
+    try {
+      if (url && url.trim()) {
+        localStorage.setItem('PHISHGUARD_BACKEND_URL', url.trim());
+      } else {
+        localStorage.removeItem('PHISHGUARD_BACKEND_URL');
+      }
+      window.location.reload();
+    } catch (e) {
+      console.error('Failed to save backend URL:', e);
+    }
+  }
+}
 
 function resolveApiUrl() {
+  const customUrl = getCustomBackendUrl();
+  const rawApiUrl = customUrl || (import.meta.env.VITE_API_URL || '').trim();
+
   if (rawApiUrl) {
     let clean = rawApiUrl.replace(/\/+$/, '');
-    // If user passed root URL without /api, append /api
     if (!clean.endsWith('/api')) {
       clean = `${clean}/api`;
     }

@@ -12,7 +12,7 @@ import {
 
 const api = axios.create({
   baseURL: API_URL || '/api',
-  timeout: 10000,
+  timeout: 45000,
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -20,7 +20,7 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   if (!IS_BACKEND_CONFIGURED && IS_PRODUCTION) {
     return Promise.reject(
-      new Error('Backend unavailable. Public HTTPS backend URL (VITE_API_URL) is not configured in Vercel.')
+      new Error('Backend unavailable. Public HTTPS backend URL is not configured. Click "Connect Live Backend" or add VITE_API_URL in Vercel.')
     );
   }
   const token = localStorage.getItem('phishguard_token');
@@ -35,11 +35,11 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.code === 'ECONNABORTED') {
-      return Promise.reject(new Error('Backend request timed out (10s limit).'));
+      return Promise.reject(new Error('Backend request timed out (45s limit). Render cold-start may be in progress; please retry in a moment.'));
     }
     if (!error.response) {
       if (!IS_BACKEND_CONFIGURED && IS_PRODUCTION) {
-        return Promise.reject(new Error('Backend unavailable. Please configure VITE_API_URL in Vercel Project Settings.'));
+        return Promise.reject(new Error('Backend unavailable. Please configure your backend URL in Settings or VITE_API_URL in Vercel.'));
       }
       return Promise.reject(new Error('Backend unavailable. Ensure the FastAPI service is running and reachable.'));
     }

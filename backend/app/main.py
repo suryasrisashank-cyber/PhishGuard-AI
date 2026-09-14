@@ -72,7 +72,7 @@ allowed_origins = list(dict.fromkeys(default_origins + custom_origins))
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_origin_regex=r"^https?://([a-zA-Z0-9-]+\.(vercel\.app|trycloudflare\.com|lhr\.life|loca\.lt)|localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+)(:\d+)?$",
+    allow_origin_regex=r"^https?://.*$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
