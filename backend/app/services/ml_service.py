@@ -10,12 +10,12 @@ from sklearn.model_selection import train_test_split
 
 try:
     from xgboost import XGBClassifier
-except ImportError:
+except Exception:
     XGBClassifier = None
 
 try:
     from lightgbm import LGBMClassifier
-except ImportError:
+except Exception:
     LGBMClassifier = None
 
 MODEL_DIR = Path(__file__).resolve().parents[3] / "ml" / "models"
