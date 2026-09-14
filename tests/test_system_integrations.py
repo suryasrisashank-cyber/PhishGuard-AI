@@ -1,7 +1,8 @@
 """
 PhishGuard AI — System Integrations Diagnostics Test Suite
 Validates runtime diagnostics endpoints and professional error handling with 100% mocked responses.
-Guarantees zero consumption of external API quotas during pytest execution.
+Guarantees hermetic execution in CI environments (GitHub Actions) without requiring local .env files.
+Zero external API quota consumption during pytest execution.
 Verifies status taxonomy, friendly SOC error messages, actionable guidance, technical details,
 and zero credential or raw exception leakage.
 """
@@ -34,6 +35,23 @@ from backend.app.services.integrations_service import (
 )
 
 client = TestClient(app)
+
+MOCK_VT_KEY = "mock_virustotal_api_key_value_12345678"
+MOCK_ABUSE_KEY = "mock_abuseipdb_api_key_value_12345678"
+MOCK_SPLUNK_TOKEN = "mock-splunk-token-uuid-1234-5678-9012"
+
+
+@pytest.fixture(autouse=True)
+def mock_integration_credentials(monkeypatch):
+    """Provide dummy test credentials to ensure hermetic execution in CI without .env."""
+    from backend.app.core.config import settings
+    monkeypatch.setattr(settings, "virus_total_api_key", MOCK_VT_KEY)
+    monkeypatch.setattr(settings, "virustotal_api_key", MOCK_VT_KEY)
+    monkeypatch.setattr(settings, "abuseipdb_api_key", MOCK_ABUSE_KEY)
+    monkeypatch.setattr(settings, "otx_api_key", "mock_otx_api_key_value_12345678")
+    monkeypatch.setattr(settings, "splunk_hec_url", "https://127.0.0.1:8088/services/collector")
+    monkeypatch.setattr(settings, "splunk_hec_token", MOCK_SPLUNK_TOKEN)
+    monkeypatch.setattr(settings, "splunk_index", "phishguard")
 
 
 def test_allowed_status_taxonomy():
@@ -85,9 +103,11 @@ def test_system_integrations_endpoints_mocked(mock_sock, mock_head, mock_post, m
 
     for item in data["integrations"]:
         assert item["status"] in ALL_ALLOWED_STATUSES
-        # Verify secret absence
+        # Verify secret absence (no actual secret token or key values)
         dump = str(item).lower()
-        assert "splunk_hec_token" not in dump
+        assert MOCK_SPLUNK_TOKEN.lower() not in dump
+        assert MOCK_VT_KEY.lower() not in dump
+        assert MOCK_ABUSE_KEY.lower() not in dump
         assert "password" not in dump
         # Verify no raw python exceptions
         assert "requests.exceptions" not in dump
@@ -229,6 +249,28 @@ def test_unverified_fallback():
     fb = get_unverified_fallback("virustotal")
     assert fb["status"] in (STATUS_NOT_VERIFIED, STATUS_NOT_CONFIGURED)
     assert fb["tested"] is False
+
+
+def test_providers_unconfigured(monkeypatch):
+    """Verify providers return NOT CONFIGURED when credentials are empty."""
+    from backend.app.core.config import settings
+    monkeypatch.setattr(settings, "virus_total_api_key", "")
+    monkeypatch.setattr(settings, "virustotal_api_key", "")
+    monkeypatch.setattr(settings, "abuseipdb_api_key", "")
+    monkeypatch.setattr(settings, "splunk_hec_url", "")
+    monkeypatch.setattr(settings, "splunk_hec_token", "")
+
+    vt = probe_virustotal()
+    assert vt["status"] == STATUS_NOT_CONFIGURED
+    assert vt["configured"] is False
+
+    aip = probe_abuseipdb()
+    assert aip["status"] == STATUS_NOT_CONFIGURED
+    assert aip["configured"] is False
+
+    spk = probe_splunk()
+    assert spk["status"] == STATUS_NOT_CONFIGURED
+    assert spk["configured"] is False
 
 
 def test_secret_sanitization():
