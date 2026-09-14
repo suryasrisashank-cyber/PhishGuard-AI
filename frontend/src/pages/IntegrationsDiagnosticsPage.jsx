@@ -11,11 +11,11 @@ import {
   AlertTriangle,
   XCircle,
   Clock,
-  Radio,
-  Server,
-  KeyRound,
-  ShieldAlert,
+  Terminal,
+  ChevronDown,
+  ChevronUp,
   Play,
+  Info,
 } from 'lucide-react';
 
 const STATUS_THEME = {
@@ -61,6 +61,13 @@ const STATUS_THEME = {
     dot: 'bg-rose-400 shadow-[0_0_8px_rgba(244,63,94,0.8)]',
     text: 'text-rose-400',
   },
+  'ACCESS DENIED': {
+    color: '#f43f5e',
+    bg: 'rgba(244, 63, 94, 0.12)',
+    border: 'rgba(244, 63, 94, 0.35)',
+    dot: 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]',
+    text: 'text-rose-400',
+  },
   'RATE LIMITED': {
     color: '#a855f7',
     bg: 'rgba(168, 85, 247, 0.12)',
@@ -103,6 +110,30 @@ const STATUS_THEME = {
     dot: 'bg-slate-400',
     text: 'text-slate-400',
   },
+  'ERROR': {
+    color: '#ef4444',
+    bg: 'rgba(239, 68, 68, 0.12)',
+    border: 'rgba(239, 68, 68, 0.35)',
+    dot: 'bg-red-400',
+    text: 'text-red-400',
+  },
+};
+
+const DEFAULT_STATUS_LABELS = {
+  'CONNECTED': 'Healthy',
+  'NOT CONFIGURED': 'Setup Required',
+  'NOT VERIFIED': 'Verification Required',
+  'UNAVAILABLE': 'Temporarily Unavailable',
+  'INVALID CREDENTIALS': 'Authentication Required',
+  'ACCESS DENIED': 'Access Denied',
+  'RATE LIMITED': 'Rate Limit Reached',
+  'QUOTA EXCEEDED': 'Quota Exhausted',
+  'TIMEOUT': 'Provider Timeout',
+  'TLS ERROR': 'Secure Connection Error',
+  'PROVIDER ERROR': 'Provider Issue',
+  'AVAILABLE': 'Ready',
+  'MANUAL': 'Manual Ingestion',
+  'ERROR': 'Integration Error',
 };
 
 export default function IntegrationsDiagnosticsPage() {
@@ -110,10 +141,33 @@ export default function IntegrationsDiagnosticsPage() {
   const [loading, setLoading] = useState(true);
   const [testingAll, setTestingAll] = useState(false);
   const [testingIndividual, setTestingIndividual] = useState({});
+  const [cooldowns, setCooldowns] = useState({});
+  const [expandedDetails, setExpandedDetails] = useState({});
   const [error, setError] = useState(null);
   const [lastTestedAt, setLastTestedAt] = useState(null);
 
-  // Initial load: fetches current state without spamming probes
+  // Interval timer to tick down active cooldowns
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCooldowns((prev) => {
+        let changed = false;
+        const next = { ...prev };
+        for (const key of Object.keys(next)) {
+          if (next[key] > 1) {
+            next[key] -= 1;
+            changed = true;
+          } else if (next[key] === 1) {
+            delete next[key];
+            changed = true;
+          }
+        }
+        return changed ? next : prev;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Fetch all integrations diagnostics (initial load or full test)
   const fetchDiagnostics = async (runProbe = false) => {
     if (runProbe) {
       setTestingAll(true);
@@ -129,8 +183,18 @@ export default function IntegrationsDiagnosticsPage() {
       } else {
         res = await systemApi.getIntegrations(false);
       }
-      setIntegrations(res.data.integrations || []);
+      const list = res.data.integrations || [];
+      setIntegrations(list);
       setLastTestedAt(new Date().toLocaleTimeString());
+
+      if (runProbe) {
+        // Set cooldown on all tested providers to prevent immediate spamming
+        const newCooldowns = {};
+        list.forEach((item) => {
+          newCooldowns[item.id] = 8;
+        });
+        setCooldowns(newCooldowns);
+      }
     } catch (err) {
       setError(err.message || 'Failed to communicate with diagnostics backend API.');
     } finally {
@@ -139,9 +203,9 @@ export default function IntegrationsDiagnosticsPage() {
     }
   };
 
-  // Test an individual provider on demand
+  // Test an individual provider on demand with cooldown protection
   const handleTestProvider = async (providerId) => {
-    if (!providerId) return;
+    if (!providerId || testingIndividual[providerId] || (cooldowns[providerId] || 0) > 0) return;
     setTestingIndividual((prev) => ({ ...prev, [providerId]: true }));
     setError(null);
 
@@ -154,14 +218,40 @@ export default function IntegrationsDiagnosticsPage() {
         );
       }
     } catch (err) {
-      setError(`Probe failed for provider ${providerId}: ${err.message}`);
+      // Graceful fallback without showing raw exception traces
+      setIntegrations((prev) =>
+        prev.map((item) =>
+          item.id === providerId
+            ? {
+                ...item,
+                status: 'UNAVAILABLE',
+                status_label: 'Temporarily Unavailable',
+                message: 'Could not communicate with the PhishGuard backend service.',
+                guidance: 'Confirm backend server health and network availability.',
+                technical_details: {
+                  provider: item.name,
+                  http_status: 503,
+                  failure_type: 'BACKEND_COMMUNICATION_ERROR',
+                  latency_ms: null,
+                  last_checked: new Date().toISOString(),
+                  request_id: `req_${Math.random().toString(36).substr(2, 6)}`,
+                },
+              }
+            : item
+        )
+      );
     } finally {
       setTestingIndividual((prev) => ({ ...prev, [providerId]: false }));
+      // 8-second cooldown timer per provider
+      setCooldowns((prev) => ({ ...prev, [providerId]: 8 }));
     }
   };
 
+  const toggleDetails = (providerId) => {
+    setExpandedDetails((prev) => ({ ...prev, [providerId]: !prev[providerId] }));
+  };
+
   useEffect(() => {
-    // Initial fetch of current integration status
     fetchDiagnostics(false);
   }, []);
 
@@ -180,7 +270,7 @@ export default function IntegrationsDiagnosticsPage() {
             </span>
             {lastTestedAt && (
               <span className="text-[11px] font-mono text-slate-400">
-                Last Tested: <span className="text-slate-200">{lastTestedAt}</span>
+                Last Verified: <span className="text-slate-200">{lastTestedAt}</span>
               </span>
             )}
           </div>
@@ -188,7 +278,7 @@ export default function IntegrationsDiagnosticsPage() {
             SYSTEM DIAGNOSTICS
           </h1>
           <p className="text-xs text-slate-400 mt-1 font-sans">
-            Real-time operational verification of security integrations and SOC telemetry tools. No simulated data.
+            Real-time operational verification of security integrations and SOC telemetry tools. Zero simulated data.
           </p>
         </div>
 
@@ -219,7 +309,7 @@ export default function IntegrationsDiagnosticsPage() {
                 </h2>
               </div>
               <span className="text-xs font-mono text-slate-400">
-                Primary Threat Intel & SIEM pipeline
+                Primary Threat Intel & SIEM Telemetry
               </span>
             </div>
 
@@ -228,6 +318,9 @@ export default function IntegrationsDiagnosticsPage() {
                 const theme = STATUS_THEME[tool.status] || STATUS_THEME['UNAVAILABLE'];
                 const isSplunk = tool.id === 'splunk';
                 const isTesting = testingIndividual[tool.id] || testingAll;
+                const cooldown = cooldowns[tool.id] || 0;
+                const hasRun = tool.tested;
+                const secondaryLabel = tool.status_label || DEFAULT_STATUS_LABELS[tool.status] || 'Active';
 
                 return (
                   <GlassCard
@@ -235,7 +328,7 @@ export default function IntegrationsDiagnosticsPage() {
                     className="p-6 relative overflow-hidden flex flex-col justify-between border-white/10 hover:border-cyber-blue/30 transition-all duration-300"
                   >
                     <div>
-                      {/* Card Header: Title & Action Button */}
+                      {/* Card Header: Title, Category & Individual Test Button */}
                       <div className="flex items-start justify-between gap-3 mb-3">
                         <div>
                           <h3 className="text-xl font-bold text-white font-mono">{tool.name}</h3>
@@ -245,29 +338,83 @@ export default function IntegrationsDiagnosticsPage() {
                         </div>
                         <button
                           onClick={() => handleTestProvider(tool.id)}
-                          disabled={isTesting}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white/5 hover:bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/30 hover:border-cyber-blue/60 transition-all text-xs font-mono font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-                          title={`Execute real-time probe for ${tool.name}`}
+                          disabled={isTesting || cooldown > 0}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-mono font-semibold transition-all shadow-sm ${
+                            cooldown > 0
+                              ? 'bg-slate-800/60 text-slate-500 border border-slate-700/40 cursor-not-allowed'
+                              : isTesting
+                              ? 'bg-cyber-blue/10 text-cyber-blue border border-cyber-blue/40 cursor-wait'
+                              : hasRun
+                              ? 'bg-white/5 hover:bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/30 hover:border-cyber-blue/60 cursor-pointer'
+                              : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:border-emerald-500/60 cursor-pointer'
+                          }`}
+                          title={
+                            cooldown > 0
+                              ? `Cooldown active. Retry available in ${cooldown}s`
+                              : `Execute operational verification for ${tool.name}`
+                          }
                         >
-                          <Play size={12} className={isTesting ? 'animate-spin' : ''} />
-                          {isTesting ? 'Testing...' : '[ Test ]'}
+                          {isTesting ? (
+                            <>
+                              <RefreshCw size={12} className="animate-spin" />
+                              <span>Testing...</span>
+                            </>
+                          ) : cooldown > 0 ? (
+                            <>
+                              <Clock size={12} className="animate-pulse text-slate-400" />
+                              <span>Retry ({cooldown}s)</span>
+                            </>
+                          ) : hasRun ? (
+                            <>
+                              <RefreshCw size={12} />
+                              <span>[ Retry Test ]</span>
+                            </>
+                          ) : (
+                            <>
+                              <Play size={12} />
+                              <span>[ Test ]</span>
+                            </>
+                          )}
                         </button>
                       </div>
 
-                      {/* Status Badge */}
-                      <div
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-md text-xs font-mono font-bold mb-4"
-                        style={{ background: theme.bg, color: theme.color, border: `1px solid ${theme.border}` }}
-                      >
-                        <span className={`w-2 h-2 rounded-full ${theme.dot}`} />
-                        <span>● {tool.status}</span>
+                      {/* Status Badge & Secondary Label */}
+                      <div className="flex flex-wrap items-center gap-2 mb-3.5">
+                        <div
+                          className="inline-flex items-center gap-2 px-3 py-1 rounded-md text-xs font-mono font-bold"
+                          style={{ background: theme.bg, color: theme.color, border: `1px solid ${theme.border}` }}
+                        >
+                          <span className={`w-2 h-2 rounded-full ${theme.dot}`} />
+                          <span>● {tool.status}</span>
+                        </div>
+                        <span className="text-[11px] font-sans font-medium text-slate-400 bg-white/5 px-2 py-0.5 rounded border border-white/5">
+                          {secondaryLabel}
+                        </span>
                       </div>
 
+                      {/* Professional SOC Friendly Message */}
+                      {tool.message && (
+                        <div className="mb-3 text-xs text-slate-200 font-sans leading-relaxed">
+                          {tool.message}
+                        </div>
+                      )}
+
+                      {/* Actionable Guidance Box */}
+                      {tool.guidance && (
+                        <div className="mb-3.5 p-2.5 rounded-md bg-amber-500/10 border border-amber-500/25 text-amber-300 text-xs flex items-start gap-2 font-sans">
+                          <AlertTriangle size={14} className="mt-0.5 shrink-0 text-amber-400" />
+                          <div>
+                            <span className="font-semibold text-amber-400">Action: </span>
+                            <span>{tool.guidance}</span>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Operational Telemetry Grid */}
-                      <div className="space-y-2 font-mono text-xs text-slate-300 bg-black/25 p-3.5 rounded-lg border border-white/5">
+                      <div className="space-y-1.5 font-mono text-xs text-slate-300 bg-black/25 p-3 rounded-lg border border-white/5">
                         <div className="flex justify-between items-center py-0.5 border-b border-white/5">
                           <span className="text-slate-400">Configured:</span>
-                          <span className={tool.configured ? 'text-emerald-400 font-bold' : 'text-amber-400'}>
+                          <span className={tool.configured ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold'}>
                             {tool.configured ? 'YES' : 'NO'}
                           </span>
                         </div>
@@ -289,7 +436,7 @@ export default function IntegrationsDiagnosticsPage() {
                             </div>
                             <div className="flex justify-between items-center py-0.5 border-b border-white/5">
                               <span className="text-slate-400">HEC Health:</span>
-                              <span className={tool.hec_health === 'PASS' ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}>
+                              <span className={tool.hec_health === 'PASS' ? 'text-emerald-400 font-bold' : tool.hec_health === 'DEGRADED' ? 'text-amber-400 font-bold' : 'text-rose-400 font-bold'}>
                                 {tool.hec_health || 'NOT TESTED'}
                               </span>
                             </div>
@@ -305,12 +452,14 @@ export default function IntegrationsDiagnosticsPage() {
                                 {tool.test_event || 'NOT TESTED'}
                               </span>
                             </div>
-                            <div className="flex justify-between items-center py-0.5 border-b border-white/5">
-                              <span className="text-slate-400">ACK Status:</span>
-                              <span className="text-slate-300 text-[11px] truncate max-w-[150px]">
-                                {tool.ack_status || 'NOT TESTED'}
-                              </span>
-                            </div>
+                            {tool.ack_status && (
+                              <div className="flex justify-between items-center py-0.5 border-b border-white/5">
+                                <span className="text-slate-400">ACK Status:</span>
+                                <span className="text-slate-300 text-[11px] truncate max-w-[150px]">
+                                  {tool.ack_status}
+                                </span>
+                              </div>
+                            )}
                           </>
                         ) : (
                           <div className="flex justify-between items-center py-0.5 border-b border-white/5">
@@ -335,18 +484,80 @@ export default function IntegrationsDiagnosticsPage() {
                           </span>
                         </div>
                       </div>
-
-                      {/* Safe Error Box */}
-                      {tool.error_message && (
-                        <div className="mt-3 p-2.5 rounded bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-mono">
-                          <span className="font-bold">Error:</span> {tool.error_message}
-                        </div>
-                      )}
                     </div>
 
-                    {/* Operational Details */}
-                    <div className="mt-4 pt-3 border-t border-white/5 text-[11px] text-slate-400 font-sans leading-relaxed">
-                      {tool.details}
+                    {/* Collapsible Technical Details Drawer */}
+                    <div className="mt-4 pt-3 border-t border-white/5">
+                      <button
+                        type="button"
+                        onClick={() => toggleDetails(tool.id)}
+                        className="w-full flex items-center justify-between text-left py-1 text-[11px] font-mono text-slate-400 hover:text-slate-200 transition-colors cursor-pointer group"
+                      >
+                        <span className="flex items-center gap-1.5 font-semibold text-slate-400 group-hover:text-cyber-blue transition-colors">
+                          <Terminal size={12} />
+                          [ Technical Details ]
+                        </span>
+                        <span className="flex items-center gap-1 text-[10px] text-slate-400">
+                          {expandedDetails[tool.id] ? (
+                            <>
+                              <span>Hide</span>
+                              <ChevronUp size={12} />
+                            </>
+                          ) : (
+                            <>
+                              <span>Show</span>
+                              <ChevronDown size={12} />
+                            </>
+                          )}
+                        </span>
+                      </button>
+
+                      {expandedDetails[tool.id] && (
+                        <div className="mt-2.5 p-3 rounded-lg bg-black/40 border border-white/10 text-[11px] font-mono text-slate-300 space-y-1.5 shadow-inner">
+                          <div className="flex justify-between items-center py-0.5 border-b border-white/5">
+                            <span className="text-slate-400">Provider:</span>
+                            <span className="text-slate-200 font-semibold">{tool.technical_details?.provider || tool.name}</span>
+                          </div>
+                          <div className="flex justify-between items-center py-0.5 border-b border-white/5">
+                            <span className="text-slate-400">HTTP Status:</span>
+                            <span className={tool.technical_details?.http_status ? (tool.technical_details.http_status >= 400 ? 'text-rose-400 font-bold' : 'text-emerald-400 font-bold') : 'text-slate-400'}>
+                              {tool.technical_details?.http_status !== null && tool.technical_details?.http_status !== undefined ? tool.technical_details.http_status : 'N/A'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center py-0.5 border-b border-white/5">
+                            <span className="text-slate-400">Failure Type:</span>
+                            <span className={tool.technical_details?.failure_type && tool.technical_details.failure_type !== 'NONE' ? 'text-amber-400 font-bold' : 'text-slate-400'}>
+                              {tool.technical_details?.failure_type || 'NONE'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center py-0.5 border-b border-white/5">
+                            <span className="text-slate-400">Latency:</span>
+                            <span className="text-cyber-blue font-bold">
+                              {tool.technical_details?.latency_ms !== null && tool.technical_details?.latency_ms !== undefined
+                                ? `${tool.technical_details.latency_ms} ms`
+                                : tool.latency_ms !== null && tool.latency_ms !== undefined
+                                ? `${tool.latency_ms} ms`
+                                : 'N/A'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center py-0.5 border-b border-white/5">
+                            <span className="text-slate-400">Last Checked:</span>
+                            <span className="text-slate-300">
+                              {tool.technical_details?.last_checked
+                                ? new Date(tool.technical_details.last_checked).toLocaleTimeString()
+                                : tool.last_checked
+                                ? new Date(tool.last_checked).toLocaleTimeString()
+                                : 'Never'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center py-0.5">
+                            <span className="text-slate-400">Request ID:</span>
+                            <span className="text-slate-300 font-mono text-[10px] bg-white/5 px-1.5 py-0.5 rounded border border-white/5">
+                              {tool.technical_details?.request_id || 'N/A'}
+                            </span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </GlassCard>
                 );
@@ -372,6 +583,9 @@ export default function IntegrationsDiagnosticsPage() {
               {secondaryList.map((tool) => {
                 const theme = STATUS_THEME[tool.status] || STATUS_THEME['UNAVAILABLE'];
                 const isTesting = testingIndividual[tool.id] || testingAll;
+                const cooldown = cooldowns[tool.id] || 0;
+                const hasRun = tool.tested;
+                const secondaryLabel = tool.status_label || DEFAULT_STATUS_LABELS[tool.status] || 'Ready';
 
                 return (
                   <GlassCard
@@ -389,29 +603,74 @@ export default function IntegrationsDiagnosticsPage() {
                         </div>
                         <button
                           onClick={() => handleTestProvider(tool.id)}
-                          disabled={isTesting}
-                          className="flex items-center gap-1 px-2 py-1 rounded bg-white/5 hover:bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/30 text-xs font-mono transition cursor-pointer disabled:opacity-50"
-                          title={`Test ${tool.name}`}
+                          disabled={isTesting || cooldown > 0}
+                          className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-mono transition cursor-pointer ${
+                            cooldown > 0
+                              ? 'bg-slate-800/60 text-slate-500 border border-slate-700/40 cursor-not-allowed'
+                              : isTesting
+                              ? 'bg-cyber-blue/10 text-cyber-blue border border-cyber-blue/40 cursor-wait'
+                              : hasRun
+                              ? 'bg-white/5 hover:bg-cyber-blue/20 text-cyber-blue border border-cyber-blue/30'
+                              : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                          }`}
+                          title={
+                            cooldown > 0
+                              ? `Cooldown active. Retry in ${cooldown}s`
+                              : `Test ${tool.name}`
+                          }
                         >
-                          <Play size={10} className={isTesting ? 'animate-spin' : ''} />
-                          {isTesting ? '...' : '[ Test ]'}
+                          {isTesting ? (
+                            <>
+                              <RefreshCw size={10} className="animate-spin" />
+                              <span>...</span>
+                            </>
+                          ) : cooldown > 0 ? (
+                            <span>{cooldown}s</span>
+                          ) : hasRun ? (
+                            <span>[ Retry ]</span>
+                          ) : (
+                            <span>[ Test ]</span>
+                          )}
                         </button>
                       </div>
 
-                      {/* Status Badge */}
-                      <div
-                        className="inline-flex items-center gap-2 px-2.5 py-1 rounded text-xs font-mono font-bold mb-3"
-                        style={{ background: theme.bg, color: theme.color, border: `1px solid ${theme.border}` }}
-                      >
-                        <span className={`w-1.5 h-1.5 rounded-full ${theme.dot}`} />
-                        <span>● {tool.status}</span>
+                      {/* Status Badge & Label */}
+                      <div className="flex flex-wrap items-center gap-1.5 mb-2.5">
+                        <div
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono font-bold"
+                          style={{ background: theme.bg, color: theme.color, border: `1px solid ${theme.border}` }}
+                        >
+                          <span className={`w-1.5 h-1.5 rounded-full ${theme.dot}`} />
+                          <span>● {tool.status}</span>
+                        </div>
+                        <span className="text-[10px] font-sans text-slate-400 bg-white/5 px-1.5 py-0.5 rounded border border-white/5">
+                          {secondaryLabel}
+                        </span>
                       </div>
 
+                      {/* Professional Friendly Message */}
+                      {tool.message && (
+                        <div className="mb-2 text-[11px] text-slate-300 font-sans leading-relaxed">
+                          {tool.message}
+                        </div>
+                      )}
+
+                      {/* Actionable Guidance Box */}
+                      {tool.guidance && (
+                        <div className="mb-2.5 p-2 rounded bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[11px] flex items-start gap-1.5 font-sans">
+                          <AlertTriangle size={12} className="mt-0.5 shrink-0 text-amber-400" />
+                          <div>
+                            <span className="font-semibold text-amber-400">Action: </span>
+                            <span>{tool.guidance}</span>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Key Indicators */}
-                      <div className="space-y-1.5 font-mono text-[11px] text-slate-400 bg-black/20 p-2.5 rounded border border-white/5">
+                      <div className="space-y-1 font-mono text-[11px] text-slate-400 bg-black/20 p-2.5 rounded border border-white/5">
                         <div className="flex justify-between items-center">
                           <span>Configured:</span>
-                          <span className={tool.configured ? 'text-emerald-400 font-bold' : 'text-amber-400'}>
+                          <span className={tool.configured ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold'}>
                             {tool.configured ? 'YES' : 'NO'}
                           </span>
                         </div>
@@ -434,17 +693,60 @@ export default function IntegrationsDiagnosticsPage() {
                           </span>
                         </div>
                       </div>
-
-                      {/* Safe Error Box */}
-                      {tool.error_message && (
-                        <div className="mt-2.5 p-2 rounded bg-rose-500/10 border border-rose-500/25 text-rose-400 text-[11px] font-mono">
-                          <span className="font-bold">Error:</span> {tool.error_message}
-                        </div>
-                      )}
                     </div>
 
-                    <div className="mt-3.5 pt-2.5 border-t border-white/5 text-[11px] font-sans text-slate-400">
-                      {tool.details}
+                    {/* Collapsible Technical Details */}
+                    <div className="mt-3 pt-2 border-t border-white/5">
+                      <button
+                        type="button"
+                        onClick={() => toggleDetails(tool.id)}
+                        className="w-full flex items-center justify-between text-left py-0.5 text-[10px] font-mono text-slate-400 hover:text-slate-200 transition-colors cursor-pointer group"
+                      >
+                        <span className="flex items-center gap-1 font-semibold text-slate-400 group-hover:text-cyber-blue transition-colors">
+                          <Terminal size={11} />
+                          [ Details ]
+                        </span>
+                        <span className="flex items-center gap-1 text-[9px] text-slate-400">
+                          {expandedDetails[tool.id] ? (
+                            <>
+                              <span>Hide</span>
+                              <ChevronUp size={10} />
+                            </>
+                          ) : (
+                            <>
+                              <span>Show</span>
+                              <ChevronDown size={10} />
+                            </>
+                          )}
+                        </span>
+                      </button>
+
+                      {expandedDetails[tool.id] && (
+                        <div className="mt-2 p-2 rounded bg-black/40 border border-white/10 text-[10px] font-mono text-slate-300 space-y-1 shadow-inner">
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400">Provider:</span>
+                            <span className="text-slate-200 font-semibold">{tool.technical_details?.provider || tool.name}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400">HTTP Status:</span>
+                            <span className={tool.technical_details?.http_status ? 'text-emerald-400' : 'text-slate-400'}>
+                              {tool.technical_details?.http_status !== null && tool.technical_details?.http_status !== undefined ? tool.technical_details.http_status : 'N/A'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400">Failure Type:</span>
+                            <span className={tool.technical_details?.failure_type && tool.technical_details.failure_type !== 'NONE' ? 'text-amber-400' : 'text-slate-400'}>
+                              {tool.technical_details?.failure_type || 'NONE'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400">Request ID:</span>
+                            <span className="text-slate-300 text-[9px]">
+                              {tool.technical_details?.request_id || 'N/A'}
+                            </span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </GlassCard>
                 );

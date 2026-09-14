@@ -2,7 +2,8 @@
 """
 PhishGuard AI — Manual Real-Integration Diagnostic CLI Operation
 Runs real runtime probes against all security integrations.
-Zero secret exposure. Prints operational SOC status table.
+Zero secret exposure. Prints operational SOC status table with friendly messages,
+actionable guidance, and sanitized technical details.
 
 Usage:
     python backend/scripts/diagnose_integrations.py
@@ -46,17 +47,21 @@ def run_diagnostics():
         cfg = "YES" if item.get("configured") else "NO"
         tested = "YES" if item.get("tested") else "NO"
         lat = f"{item['latency_ms']} ms" if item.get("latency_ms") is not None else "-"
-        print(f"  * {name:<16} Status: {status:<18} Configured: {cfg:<4} Probe: {tested:<4} Latency: {lat}")
+        label = item.get("status_label", status)
+        print(f"  * {name:<16} Status: {status:<18} [{label}] Configured: {cfg:<4} Probe: {tested:<4} Latency: {lat}")
         if name == "Splunk HEC":
             print(f"      TCP: {item.get('tcp', '-')} | HEC Health: {item.get('hec_health', '-')} | Auth: {item.get('authentication', '-')} | Event: {item.get('test_event', '-')}")
             if item.get("ack_status"):
                 print(f"      ACK: {item.get('ack_status')}")
         elif item.get("real_probe"):
             print(f"      Probe Result: {item.get('real_probe')}")
-        if item.get("details"):
-            print(f"      Details: {item['details']}")
-        if item.get("error_message"):
-            print(f"      Safe Error: {item['error_message']}")
+        if item.get("message"):
+            print(f"      Message: {item['message']}")
+        if item.get("guidance"):
+            print(f"      Guidance: {item['guidance']}")
+        if item.get("technical_details"):
+            td = item["technical_details"]
+            print(f"      Tech: HTTP={td.get('http_status')} | Failure={td.get('failure_type')} | ReqID={td.get('request_id')}")
         print()
 
     # Secondary Integrations
@@ -70,13 +75,17 @@ def run_diagnostics():
         cfg = "YES" if item.get("configured") else "NO"
         tested = "YES" if item.get("tested") else "NO"
         lat = f"{item['latency_ms']} ms" if item.get("latency_ms") is not None else "-"
-        print(f"  * {name:<16} Status: {status:<18} Configured: {cfg:<4} Tested: {tested:<4} Latency: {lat}")
-        if item.get("details"):
-            print(f"      Details: {item['details']}")
-        if item.get("error_message"):
-            print(f"      Safe Error: {item['error_message']}")
+        label = item.get("status_label", status)
+        print(f"  * {name:<16} Status: {status:<18} [{label}] Configured: {cfg:<4} Tested: {tested:<4} Latency: {lat}")
+        if item.get("message"):
+            print(f"      Message: {item['message']}")
+        if item.get("guidance"):
+            print(f"      Guidance: {item['guidance']}")
+        if item.get("technical_details"):
+            td = item["technical_details"]
+            print(f"      Tech: HTTP={td.get('http_status')} | Failure={td.get('failure_type')} | ReqID={td.get('request_id')}")
+        print()
 
-    print()
     print("=" * 80)
     print(" End of Diagnostics Report — Zero secrets exposed")
     print("=" * 80)

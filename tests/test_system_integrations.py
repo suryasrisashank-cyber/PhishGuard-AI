@@ -1,8 +1,9 @@
 """
 PhishGuard AI — System Integrations Diagnostics Test Suite
-Validates runtime diagnostics endpoints with 100% mocked provider responses.
+Validates runtime diagnostics endpoints and professional error handling with 100% mocked responses.
 Guarantees zero consumption of external API quotas during pytest execution.
-Verifies status taxonomy, individual provider testing, and zero credential leakage.
+Verifies status taxonomy, friendly SOC error messages, actionable guidance, technical details,
+and zero credential or raw exception leakage.
 """
 import pytest
 from unittest.mock import patch, MagicMock
@@ -17,7 +18,9 @@ from backend.app.services.integrations_service import (
     STATUS_NOT_VERIFIED,
     STATUS_UNAVAILABLE,
     STATUS_INVALID_CREDENTIALS,
+    STATUS_ACCESS_DENIED,
     STATUS_RATE_LIMITED,
+    STATUS_QUOTA_EXCEEDED,
     STATUS_TLS_ERROR,
     STATUS_TIMEOUT,
     STATUS_PROVIDER_ERROR,
@@ -34,13 +37,14 @@ client = TestClient(app)
 
 
 def test_allowed_status_taxonomy():
-    """Verify all 12 operational statuses are explicitly accounted for."""
+    """Verify all operational statuses are explicitly accounted for."""
     expected_statuses = {
         "CONNECTED",
         "NOT CONFIGURED",
         "NOT VERIFIED",
         "UNAVAILABLE",
         "INVALID CREDENTIALS",
+        "ACCESS DENIED",
         "RATE LIMITED",
         "QUOTA EXCEEDED",
         "TLS ERROR",
@@ -48,6 +52,7 @@ def test_allowed_status_taxonomy():
         "PROVIDER ERROR",
         "AVAILABLE",
         "MANUAL",
+        "ERROR",
     }
     assert expected_statuses == ALL_ALLOWED_STATUSES
 
@@ -84,6 +89,10 @@ def test_system_integrations_endpoints_mocked(mock_sock, mock_head, mock_post, m
         dump = str(item).lower()
         assert "splunk_hec_token" not in dump
         assert "password" not in dump
+        # Verify no raw python exceptions
+        assert "requests.exceptions" not in dump
+        assert "traceback" not in dump
+        assert "winerror" not in dump
 
     # 2. Test POST /api/system/integrations/test-all
     res_all = client.post("/api/system/integrations/test-all")
@@ -95,47 +104,78 @@ def test_system_integrations_endpoints_mocked(mock_sock, mock_head, mock_post, m
 
 @patch("requests.get")
 def test_virustotal_mocked_statuses(mock_get):
-    """Verify VirusTotal status mappings without hitting real API."""
+    """Verify VirusTotal status mappings and friendly messages without hitting real API."""
     # 200 OK -> CONNECTED
     mock_get.return_value.status_code = 200
     res = probe_virustotal()
     assert res["status"] == STATUS_CONNECTED
     assert res["tested"] is True
+    assert "operational" in res["message"].lower()
 
     # 401 Unauthorized -> INVALID CREDENTIALS
     mock_get.return_value.status_code = 401
     res = probe_virustotal()
     assert res["status"] == STATUS_INVALID_CREDENTIALS
+    assert "rejected" in res["message"].lower() or "credentials" in res["message"].lower()
+    assert res["guidance"] is not None
+    assert "requests.exceptions" not in res["message"]
+
+    # 403 Forbidden -> ACCESS DENIED
+    mock_get.return_value.status_code = 403
+    res = probe_virustotal()
+    assert res["status"] == STATUS_ACCESS_DENIED
+    assert "denied" in res["message"].lower()
+    assert res["guidance"] is not None
 
     # 429 Too Many Requests -> RATE LIMITED
     mock_get.return_value.status_code = 429
     res = probe_virustotal()
     assert res["status"] == STATUS_RATE_LIMITED
+    assert "limit" in res["message"].lower()
+    assert "requests.exceptions" not in res["message"]
 
-    # Timeout -> TIMEOUT
-    mock_get.side_effect = requests.exceptions.Timeout()
+    # 503 Server Error -> PROVIDER ERROR
+    mock_get.return_value.status_code = 503
+    res = probe_virustotal()
+    assert res["status"] == STATUS_PROVIDER_ERROR
+    assert "service error" in res["message"].lower() or "provider" in res["message"].lower()
+
+    # Timeout -> TIMEOUT with friendly message
+    mock_get.side_effect = requests.exceptions.Timeout("Connection timed out (fake)")
     res = probe_virustotal()
     assert res["status"] == STATUS_TIMEOUT
+    assert "time" in res["message"].lower()
+    assert "requests.exceptions" not in res["message"]
+    assert res["technical_details"]["failure_type"] == "PROVIDER_TIMEOUT"
+    assert res["technical_details"]["request_id"].startswith("vir_")
 
     # SSLError -> TLS ERROR
-    mock_get.side_effect = requests.exceptions.SSLError()
+    mock_get.side_effect = requests.exceptions.SSLError("CERTIFICATE_VERIFY_FAILED")
     res = probe_virustotal()
     assert res["status"] == STATUS_TLS_ERROR
+    assert "secure connection" in res["message"].lower()
+    assert "requests.exceptions" not in res["message"]
 
 
 @patch("requests.get")
 def test_abuseipdb_mocked_statuses(mock_get):
-    """Verify AbuseIPDB status mappings without hitting real API."""
+    """Verify AbuseIPDB status mappings and sanitized technical details."""
     # 200 OK -> CONNECTED
     mock_get.side_effect = None
     mock_get.return_value.status_code = 200
     res = probe_abuseipdb()
     assert res["status"] == STATUS_CONNECTED
 
-    # 403 Forbidden -> INVALID CREDENTIALS
-    mock_get.return_value.status_code = 403
+    # 401 -> INVALID CREDENTIALS
+    mock_get.return_value.status_code = 401
     res = probe_abuseipdb()
     assert res["status"] == STATUS_INVALID_CREDENTIALS
+
+    # 403 -> ACCESS DENIED
+    mock_get.return_value.status_code = 403
+    res = probe_abuseipdb()
+    assert res["status"] == STATUS_ACCESS_DENIED
+    assert "denied" in res["message"].lower()
 
     # 429 -> RATE LIMITED
     mock_get.return_value.status_code = 429
@@ -143,18 +183,24 @@ def test_abuseipdb_mocked_statuses(mock_get):
     assert res["status"] == STATUS_RATE_LIMITED
 
     # ConnectionError -> UNAVAILABLE
-    mock_get.side_effect = requests.exceptions.ConnectionError()
+    mock_get.side_effect = requests.exceptions.ConnectionError("Connection refused by target")
     res = probe_abuseipdb()
     assert res["status"] == STATUS_UNAVAILABLE
+    assert "requests.exceptions" not in res["message"]
+    assert res["technical_details"]["request_id"] is not None
 
 
 @patch("socket.create_connection")
-def test_splunk_tcp_failure(mock_sock):
-    """Verify Splunk reports UNAVAILABLE when TCP connection fails."""
-    mock_sock.side_effect = ConnectionRefusedError("Connection refused")
+def test_splunk_tcp_failure_no_raw_exception(mock_sock):
+    """Verify Splunk reports UNAVAILABLE when TCP connection fails without leaking WinError."""
+    mock_sock.side_effect = ConnectionRefusedError("[WinError 10061] No connection could be made")
     res = probe_splunk()
     assert res["status"] == STATUS_UNAVAILABLE
     assert res["tcp"] == "FAIL"
+    assert "WinError" not in res["message"]
+    assert "could not be reached" in res["message"]
+    assert "splunk enterprise" in res["guidance"].lower() or "port 8088" in res["guidance"].lower()
+    assert res["technical_details"]["failure_type"] == "CONNECTION_REFUSED"
 
 
 @patch("requests.get")
@@ -166,6 +212,7 @@ def test_individual_provider_test_endpoints(mock_get):
     res_vt = client.post("/api/system/integrations/virustotal/test")
     assert res_vt.status_code == 200
     assert res_vt.json()["provider"]["id"] == "virustotal"
+    assert "technical_details" in res_vt.json()["provider"]
 
     # Burp Suite
     res_burp = client.post("/api/system/integrations/burpsuite/test")
@@ -185,11 +232,12 @@ def test_unverified_fallback():
 
 
 def test_secret_sanitization():
-    """Verify sanitize_secrets strips out real credentials, auth headers, and tokens."""
+    """Verify sanitize_secrets strips out real credentials, auth headers, tokens, and raw tracebacks."""
     dirty = {
         "details": "Authorization failed with Splunk 293c7801-560b-4157-82b4-c83a05b65166",
         "error": "Failed Key 1c33721f3e6f519017517b3c5f652162b7c808229400977bbb141ee520407d289e1314853ff51231",
         "nested": {"token": "Bearer abc123def456xyz789"},
+        "stack": 'File "C:\\backend\\app.py", line 42, in test',
     }
     clean = sanitize_secrets(dirty)
     assert "293c7801" not in str(clean)
