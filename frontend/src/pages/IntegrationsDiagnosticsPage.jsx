@@ -103,6 +103,13 @@ const STATUS_THEME = {
     dot: 'bg-red-400 shadow-[0_0_8px_rgba(239,68,68,0.8)]',
     text: 'text-red-400',
   },
+  'LOCAL ONLY': {
+    color: '#818cf8',
+    bg: 'rgba(129, 140, 248, 0.12)',
+    border: 'rgba(129, 140, 248, 0.35)',
+    dot: 'bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.8)]',
+    text: 'text-indigo-400',
+  },
   'UNAVAILABLE': {
     color: '#94a3b8',
     bg: 'rgba(148, 163, 184, 0.10)',
@@ -123,7 +130,7 @@ const DEFAULT_STATUS_LABELS = {
   'CONNECTED': 'Healthy',
   'NOT CONFIGURED': 'Setup Required',
   'NOT VERIFIED': 'Verification Required',
-  'UNAVAILABLE': 'Temporarily Unavailable',
+  'UNAVAILABLE': 'Unavailable on current runtime',
   'INVALID CREDENTIALS': 'Authentication Required',
   'ACCESS DENIED': 'Access Denied',
   'RATE LIMITED': 'Rate Limit Reached',
@@ -134,6 +141,7 @@ const DEFAULT_STATUS_LABELS = {
   'AVAILABLE': 'Ready',
   'MANUAL': 'Manual Ingestion',
   'ERROR': 'Integration Error',
+  'LOCAL ONLY': 'Local Lab Only',
 };
 
 export default function IntegrationsDiagnosticsPage() {
@@ -167,6 +175,21 @@ export default function IntegrationsDiagnosticsPage() {
     return () => clearInterval(interval);
   }, []);
 
+const FALLBACK_INTEGRATIONS = [
+  { id: 'virustotal', name: 'VirusTotal', category: 'Threat Intelligence', critical: true, status: 'UNAVAILABLE', status_label: 'Unavailable on current runtime', configured: false, tested: false, message: 'Backend unavailable. Ensure FastAPI is running and VITE_API_URL is configured in Vercel.', guidance: 'Set VITE_API_URL in Vercel to point to your live FastAPI backend.', technical_details: { provider: 'VirusTotal', http_status: null, failure_type: 'BACKEND_UNAVAILABLE', latency_ms: null, last_checked: null, request_id: 'vt_offline' } },
+  { id: 'abuseipdb', name: 'AbuseIPDB', category: 'Threat Intelligence', critical: true, status: 'UNAVAILABLE', status_label: 'Unavailable on current runtime', configured: false, tested: false, message: 'Backend unavailable. Ensure FastAPI is running and VITE_API_URL is configured in Vercel.', guidance: 'Set VITE_API_URL in Vercel to point to your live FastAPI backend.', technical_details: { provider: 'AbuseIPDB', http_status: null, failure_type: 'BACKEND_UNAVAILABLE', latency_ms: null, last_checked: null, request_id: 'aip_offline' } },
+  { id: 'splunk', name: 'Splunk HEC', category: 'SIEM', critical: true, status: 'LOCAL ONLY', status_label: 'Local Lab Only', configured: false, tested: false, tcp: 'LOCAL_ONLY', hec_health: 'LOCAL_ONLY', authentication: 'LOCAL_ONLY', test_event: 'LOCAL_ONLY', message: 'Local Windows Splunk is isolated in local lab and not exposed to cloud.', guidance: 'Keep local Splunk private. Connect to Splunk Cloud if cloud telemetry is needed.', technical_details: { provider: 'Splunk HEC', http_status: null, failure_type: 'LOCAL_LAB_ISOLATED', latency_ms: null, last_checked: null, request_id: 'spk_offline' } },
+  { id: 'otx', name: 'AlienVault OTX', category: 'Threat Intelligence', critical: false, status: 'UNAVAILABLE', status_label: 'Unavailable on current runtime', configured: false, tested: false, message: 'Backend unavailable.', guidance: 'Verify backend connection.', technical_details: { provider: 'AlienVault OTX', http_status: null, failure_type: 'BACKEND_UNAVAILABLE', latency_ms: null, last_checked: null, request_id: 'otx_offline' } },
+  { id: 'urlhaus', name: 'URLhaus', category: 'Threat Intelligence', critical: false, status: 'UNAVAILABLE', status_label: 'Unavailable on current runtime', configured: false, tested: false, message: 'Backend unavailable.', guidance: 'Verify backend connection.', technical_details: { provider: 'URLhaus', http_status: null, failure_type: 'BACKEND_UNAVAILABLE', latency_ms: null, last_checked: null, request_id: 'url_offline' } },
+  { id: 'dns', name: 'DNS', category: 'Network & DNS', critical: false, status: 'UNAVAILABLE', status_label: 'Unavailable on current runtime', configured: false, tested: false, message: 'Backend unavailable.', guidance: 'Verify backend connection.', technical_details: { provider: 'DNS', http_status: null, failure_type: 'BACKEND_UNAVAILABLE', latency_ms: null, last_checked: null, request_id: 'dns_offline' } },
+  { id: 'whois', name: 'RDAP/WHOIS', category: 'Network & DNS', critical: false, status: 'UNAVAILABLE', status_label: 'Unavailable on current runtime', configured: false, tested: false, message: 'Backend unavailable.', guidance: 'Verify backend connection.', technical_details: { provider: 'RDAP/WHOIS', http_status: null, failure_type: 'BACKEND_UNAVAILABLE', latency_ms: null, last_checked: null, request_id: 'who_offline' } },
+  { id: 'yara', name: 'YARA', category: 'File Analysis', critical: false, status: 'LOCAL ONLY', status_label: 'Local Lab Only', configured: false, tested: false, message: 'Local rule matching requires host installation.', guidance: 'Available in local environment when yara-python is installed.', technical_details: { provider: 'YARA', http_status: null, failure_type: 'LOCAL_LAB_ONLY', latency_ms: null, last_checked: null, request_id: 'yar_offline' } },
+  { id: 'tshark', name: 'tshark', category: 'PCAP Analysis', critical: false, status: 'LOCAL ONLY', status_label: 'Local Lab Only', configured: false, tested: false, message: 'Local CLI binary requires host installation.', guidance: 'Available in local environment when Wireshark / tshark is installed.', technical_details: { provider: 'tshark', http_status: null, failure_type: 'LOCAL_LAB_ONLY', latency_ms: null, last_checked: null, request_id: 'tsh_offline' } },
+  { id: 'pyshark', name: 'PyShark', category: 'PCAP Analysis', critical: false, status: 'LOCAL ONLY', status_label: 'Local Lab Only', configured: false, tested: false, message: 'Local python wrapper requires host installation.', guidance: 'Available in local environment when pyshark is installed.', technical_details: { provider: 'PyShark', http_status: null, failure_type: 'LOCAL_LAB_ONLY', latency_ms: null, last_checked: null, request_id: 'pys_offline' } },
+  { id: 'scapy', name: 'Scapy', category: 'PCAP Analysis', critical: false, status: 'AVAILABLE', status_label: 'Ready', configured: false, tested: false, message: 'Offline packet parsing library.', guidance: null, technical_details: { provider: 'Scapy', http_status: null, failure_type: 'NONE', latency_ms: null, last_checked: null, request_id: 'scp_offline' } },
+  { id: 'burp', name: 'Burp Suite', category: 'Web App Security', critical: false, status: 'MANUAL', status_label: 'Manual Ingestion', configured: false, tested: false, message: 'External authorized testing tool; manual finding import enabled.', guidance: null, technical_details: { provider: 'Burp Suite', http_status: null, failure_type: 'MANUAL_INGESTION', latency_ms: null, last_checked: null, request_id: 'brp_offline' } },
+];
+
   // Fetch all integrations diagnostics (initial load or full test)
   const fetchDiagnostics = async (runProbe = false) => {
     if (runProbe) {
@@ -197,6 +220,7 @@ export default function IntegrationsDiagnosticsPage() {
       }
     } catch (err) {
       setError(err.message || 'Failed to communicate with diagnostics backend API.');
+      setIntegrations((prev) => (prev.length > 0 ? prev : FALLBACK_INTEGRATIONS));
     } finally {
       setLoading(false);
       setTestingAll(false);
@@ -294,10 +318,24 @@ export default function IntegrationsDiagnosticsPage() {
         </div>
       </div>
 
-      {loading && <LoadingSkeleton count={4} />}
-      {error && <ErrorState message={error} onRetry={() => fetchDiagnostics(false)} />}
+      {error && (
+        <div className="p-4 rounded-lg bg-rose-500/10 border border-rose-500/25 text-rose-300 text-xs flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-2.5">
+            <AlertTriangle size={16} className="text-rose-400 shrink-0" />
+            <span><strong>Backend unavailable:</strong> {error}. Integrations are showing default lab/offline states.</span>
+          </div>
+          <button
+            onClick={() => fetchDiagnostics(false)}
+            className="px-3 py-1 rounded bg-white/10 hover:bg-white/20 text-white font-mono text-xs cursor-pointer"
+          >
+            Retry Verification
+          </button>
+        </div>
+      )}
 
-      {!loading && (
+      {loading && integrations.length === 0 && <LoadingSkeleton count={4} />}
+
+      {integrations.length > 0 && (
         <div className="space-y-10">
           {/* CRITICAL INTEGRATIONS */}
           <section className="space-y-4">

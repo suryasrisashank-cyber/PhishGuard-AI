@@ -16,12 +16,39 @@ export default function SplunkPage() {
   const fetchSplunkInfo = async () => {
     setLoading(true);
     try {
-      const [statusRes, splRes] = await Promise.all([
+      const [statusRes, splRes] = await Promise.allSettled([
         splunkApi.getStatus(),
         splunkApi.getSplExamples(),
       ]);
-      setStatus(statusRes.data);
-      setSplData(splRes.data);
+      if (statusRes.status === 'fulfilled') {
+        setStatus(statusRes.value.data);
+      } else {
+        setStatus({
+          status: 'UNAVAILABLE',
+          status_label: 'Local Lab / Not Available in Cloud',
+          configured: false,
+          endpoint: '127.0.0.1:8088',
+          details: 'Splunk HEC is a local machine integration. When running in cloud, local Windows Splunk is isolated and not exposed to the internet.',
+        });
+      }
+      if (splRes.status === 'fulfilled') {
+        setSplData(splRes.value.data);
+      } else {
+        setSplData({
+          searches: [
+            {
+              title: 'Phishing Threat Verdicts',
+              spl: 'index=phishguard sourcetype="phishguard:scan" verdict=Malicious | table _time target risk_score sender_ip',
+              description: 'Retrieve confirmed phishing detections from recent scans.',
+            },
+            {
+              title: 'High Risk IOC Correlation',
+              spl: 'index=phishguard sourcetype="phishguard:scan" risk_score>=75 | stats count by target, verdict',
+              description: 'Count targets exceeding high severity risk threshold.',
+            },
+          ],
+        });
+      }
     } catch (err) {
       console.error(err);
     } finally {

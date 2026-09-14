@@ -1,5 +1,27 @@
+import os
 from functools import lru_cache
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def is_cloud_environment() -> bool:
+    """Detect whether backend is running in a cloud platform or container."""
+    cloud_env_indicators = [
+        "RENDER",
+        "RAILWAY_ENVIRONMENT",
+        "FLY_APP_NAME",
+        "HEROKU",
+        "K_SERVICE",          # Google Cloud Run
+        "DYNO",               # Heroku
+        "VERCEL",
+        "AWS_EXECUTION_ENV",
+    ]
+    if any(os.getenv(k) for k in cloud_env_indicators):
+        return True
+    if os.getenv("IS_CLOUD_DEPLOYMENT", "").lower() in ("true", "1", "yes"):
+        return True
+    if os.getenv("ENVIRONMENT", "").lower() == "production" and not os.getenv("IS_LOCAL_LAB"):
+        return True
+    return False
 
 
 class Settings(BaseSettings):
@@ -8,6 +30,11 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore"
     )
+
+    # Environment & Deployment
+    environment: str = "production"
+    is_cloud_deployment: bool = False
+    frontend_origins: str = ""
 
     # Security & Auth
     secret_key: str = "change-me-in-production"
@@ -45,7 +72,10 @@ class Settings(BaseSettings):
 
 @lru_cache()
 def get_settings() -> Settings:
-    return Settings()
+    s = Settings()
+    if is_cloud_environment():
+        s.is_cloud_deployment = True
+    return s
 
 
 settings = get_settings()

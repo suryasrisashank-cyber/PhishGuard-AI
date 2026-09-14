@@ -53,15 +53,26 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+from .core.config import settings
+
+# Construct CORS origins dynamically: local defaults + configured production origins
+default_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+custom_origins = [
+    o.strip()
+    for o in (settings.frontend_origins or "").split(",")
+    if o.strip()
+]
+allowed_origins = list(dict.fromkeys(default_origins + custom_origins))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
-    allow_origin_regex=r"^https?://([a-zA-Z0-9-]+\.(trycloudflare\.com|lhr\.life|loca\.lt)|localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+)(:\d+)?$",
+    allow_origins=allowed_origins,
+    allow_origin_regex=r"^https?://([a-zA-Z0-9-]+\.(vercel\.app|trycloudflare\.com|lhr\.life|loca\.lt)|localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+)(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -99,10 +110,12 @@ def home() -> dict:
 
 
 @app.get("/health")
+@app.get("/api/health")
 def health() -> dict:
     return {
-        "status": "ok",
+        "status": "healthy",
         "service": "phishguard-ai",
         "version": "3.0.0",
+        "environment": settings.environment,
         "database": "online",
     }

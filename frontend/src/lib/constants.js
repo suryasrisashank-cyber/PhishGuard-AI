@@ -2,7 +2,15 @@
  * PhishGuard AI 2.0 — Shared constants and configuration
  */
 
-export const API_URL = import.meta.env.VITE_API_URL || '/api';
+import {
+  API_URL,
+  IS_BACKEND_CONFIGURED,
+  IS_PRODUCTION,
+  IS_BACKEND_HTTPS,
+  getHealthUrl,
+} from './apiConfig.js';
+
+export { API_URL, IS_BACKEND_CONFIGURED, IS_PRODUCTION, IS_BACKEND_HTTPS, getHealthUrl };
 export const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
 
 export const VERDICT_CONFIG = {

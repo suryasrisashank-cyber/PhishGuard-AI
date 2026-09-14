@@ -71,6 +71,7 @@ def test_allowed_status_taxonomy():
         "AVAILABLE",
         "MANUAL",
         "ERROR",
+        "LOCAL ONLY",
     }
     assert expected_statuses == ALL_ALLOWED_STATUSES
 

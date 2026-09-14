@@ -3,16 +3,26 @@
  * Centralized communication layer for all SOC analysis, telemetry, and SIEM endpoints.
  */
 import axios from 'axios';
-import { API_URL } from '../lib/constants.js';
+import {
+  API_URL,
+  IS_BACKEND_CONFIGURED,
+  IS_PRODUCTION,
+  getHealthUrl,
+} from '../lib/constants.js';
 
 const api = axios.create({
-  baseURL: API_URL,
-  timeout: 30000,
+  baseURL: API_URL || '/api',
+  timeout: 10000,
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Request interceptor — attach auth token if present
+// Request interceptor — fail fast if backend is unconfigured in production & attach token
 api.interceptors.request.use((config) => {
+  if (!IS_BACKEND_CONFIGURED && IS_PRODUCTION) {
+    return Promise.reject(
+      new Error('Backend unavailable. Public HTTPS backend URL (VITE_API_URL) is not configured in Vercel.')
+    );
+  }
   const token = localStorage.getItem('phishguard_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -25,10 +35,13 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.code === 'ECONNABORTED') {
-      return Promise.reject(new Error('Request timed out. The backend may be slow or unavailable.'));
+      return Promise.reject(new Error('Backend request timed out (10s limit).'));
     }
     if (!error.response) {
-      return Promise.reject(new Error('Unable to connect to PhishGuard API. Ensure the backend is running and tunnel is active.'));
+      if (!IS_BACKEND_CONFIGURED && IS_PRODUCTION) {
+        return Promise.reject(new Error('Backend unavailable. Please configure VITE_API_URL in Vercel Project Settings.'));
+      }
+      return Promise.reject(new Error('Backend unavailable. Ensure the FastAPI service is running and reachable.'));
     }
     if (error.response.status === 401) {
       localStorage.removeItem('phishguard_token');
@@ -141,7 +154,13 @@ export const authApi = {
 };
 
 export const healthApi = {
-  check: () => axios.get(API_URL.startsWith('http') ? `${API_URL.replace(/\/api\/?$/, '')}/health` : '/health', { timeout: 5000 }),
+  check: () => {
+    const url = getHealthUrl();
+    if (!url) {
+      return Promise.reject(new Error('Backend unavailable. VITE_API_URL is not configured.'));
+    }
+    return axios.get(url, { timeout: 5000 });
+  },
 };
 
 

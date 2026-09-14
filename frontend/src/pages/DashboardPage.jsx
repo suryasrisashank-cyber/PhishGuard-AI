@@ -29,12 +29,35 @@ export default function DashboardPage() {
     setLoading(true);
     setError(null);
     try {
-      const [statsRes, recentRes] = await Promise.all([
+      const [statsResult, recentResult] = await Promise.allSettled([
         dashboardApi.getStats(),
         dashboardApi.getRecent(10),
       ]);
-      setStats(statsRes.data);
-      setRecent(recentRes.data);
+
+      if (statsResult.status === 'fulfilled') {
+        setStats(statsResult.value.data);
+      } else {
+        setStats({
+          total_scans: 0,
+          threat_rate: 0,
+          safe: 0,
+          suspicious: 0,
+          malicious: 0,
+          avg_latency_ms: 0,
+          critical_count: 0,
+          recent_24h: 0,
+        });
+      }
+
+      if (recentResult.status === 'fulfilled') {
+        setRecent(recentResult.value.data || []);
+      } else {
+        setRecent([]);
+      }
+
+      if (statsResult.status === 'rejected' && recentResult.status === 'rejected') {
+        setError(statsResult.reason?.message || 'Backend unavailable');
+      }
     } catch (err) {
       setError(err.message || 'Failed to load dashboard telemetry');
     } finally {
@@ -61,10 +84,49 @@ export default function DashboardPage() {
         subtitle="Tier-1 Threat Intelligence, Heuristic Forensics & Automated Case Triage"
         actions={
           <button className="btn-ghost" onClick={loadData} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
-            <RefreshCw size={14} /> Refresh Telemetry
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh Telemetry
           </button>
         }
       />
+
+      {error && (
+        <div style={{
+          padding: '12px 16px',
+          borderRadius: 10,
+          background: 'rgba(239, 68, 68, 0.1)',
+          border: '1px solid rgba(239, 68, 68, 0.25)',
+          color: '#fca5a5',
+          fontSize: 13,
+          marginBottom: 20,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+          flexWrap: 'wrap',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <AlertOctagon size={16} color="#ef4444" style={{ flexShrink: 0 }} />
+            <span><strong>Backend unavailable:</strong> {error}. Telemetry features are running in degraded offline mode.</span>
+          </div>
+          <button
+            onClick={loadData}
+            style={{
+              padding: '4px 10px',
+              borderRadius: 6,
+              background: 'rgba(255, 255, 255, 0.08)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              color: '#fff',
+              cursor: 'pointer',
+              fontSize: 12,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+            }}
+          >
+            <RefreshCw size={12} /> Retry
+          </button>
+        </div>
+      )}
 
       {DEMO_MODE && (
         <div style={{
@@ -77,10 +139,8 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {loading ? (
+      {loading && !stats ? (
         <LoadingSkeleton cards={5} />
-      ) : error ? (
-        <ErrorState message={error} onRetry={loadData} />
       ) : (
         <>
           {/* Quick Launch Cards */}

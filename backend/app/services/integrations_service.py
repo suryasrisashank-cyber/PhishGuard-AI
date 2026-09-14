@@ -42,6 +42,7 @@ STATUS_PROVIDER_ERROR = "PROVIDER ERROR"
 STATUS_AVAILABLE = "AVAILABLE"
 STATUS_MANUAL = "MANUAL"
 STATUS_ERROR = "ERROR"
+STATUS_LOCAL_ONLY = "LOCAL ONLY"
 
 ALL_ALLOWED_STATUSES = {
     STATUS_CONNECTED,
@@ -58,6 +59,7 @@ ALL_ALLOWED_STATUSES = {
     STATUS_AVAILABLE,
     STATUS_MANUAL,
     STATUS_ERROR,
+    STATUS_LOCAL_ONLY,
 }
 
 # Status labels mapping for UI display
@@ -65,7 +67,7 @@ STATUS_LABELS = {
     STATUS_CONNECTED: "Healthy",
     STATUS_NOT_CONFIGURED: "Setup Required",
     STATUS_NOT_VERIFIED: "Verification Required",
-    STATUS_UNAVAILABLE: "Temporarily Unavailable",
+    STATUS_UNAVAILABLE: "Unavailable on current runtime",
     STATUS_INVALID_CREDENTIALS: "Authentication Required",
     STATUS_ACCESS_DENIED: "Access Denied",
     STATUS_RATE_LIMITED: "Rate Limit Reached",
@@ -76,6 +78,7 @@ STATUS_LABELS = {
     STATUS_AVAILABLE: "Ready",
     STATUS_MANUAL: "Manual Finding Ingestion",
     STATUS_ERROR: "Integration Error",
+    STATUS_LOCAL_ONLY: "Local Lab Only",
 }
 
 # In-memory runtime cache for diagnostics
@@ -282,6 +285,38 @@ def probe_splunk() -> dict[str, Any]:
     host = parsed.hostname or "127.0.0.1"
     port = parsed.port or (443 if parsed.scheme == "https" else 8088)
     endpoint_display = f"{host}:{port}"
+
+    # Capability detection: local lab vs cloud deployment
+    if getattr(settings, "is_cloud_deployment", False) and host in ("127.0.0.1", "localhost", "0.0.0.0"):
+        now_iso = datetime.now(timezone.utc).isoformat()
+        return sanitize_secrets({
+            "id": "splunk",
+            "name": "Splunk HEC",
+            "category": "SIEM",
+            "critical": True,
+            "status": STATUS_LOCAL_ONLY,
+            "status_label": "Local Lab / Not Available in Cloud",
+            "configured": True,
+            "tested": True,
+            "endpoint": f"{endpoint_display} (Local Lab Loopback)",
+            "tcp": "LOCAL_ONLY",
+            "hec_health": "LOCAL_ONLY",
+            "authentication": "LOCAL_ONLY",
+            "test_event": "NOT_ROUTED",
+            "ack_status": "DISABLED",
+            "latency_ms": None,
+            "last_checked": now_iso,
+            "message": "Splunk HEC is configured for local machine (127.0.0.1). When FastAPI is hosted in the cloud, local Windows Splunk is isolated and not exposed to the internet.",
+            "guidance": "Keep local Splunk private. For cloud SIEM telemetry, configure a reachable Splunk Cloud HEC URL.",
+            "technical_details": {
+                "provider": "Splunk HEC",
+                "http_status": None,
+                "failure_type": "LOCAL_LAB_ISOLATED",
+                "latency_ms": None,
+                "last_checked": now_iso,
+                "request_id": generate_request_id("spk"),
+            },
+        })
 
     # Step 1: TCP Connectivity probe (2.0s timeout)
     t0 = time.time()
