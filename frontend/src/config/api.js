@@ -74,7 +74,13 @@ export function resolveApiBaseUrl() {
     return normalizeApiUrl(devOverride);
   }
 
-  const envUrl = (import.meta.env.VITE_API_URL || '').trim();
+  const envUrl = (
+    import.meta.env.VITE_API_URL ||
+    import.meta.env.API_URL ||
+    import.meta.env.BACKEND_URL ||
+    (typeof __API_URL__ !== 'undefined' ? __API_URL__ : '') ||
+    ''
+  ).trim();
   if (envUrl) {
     return normalizeApiUrl(envUrl);
   }
