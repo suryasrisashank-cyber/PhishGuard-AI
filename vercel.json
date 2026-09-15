@@ -5,6 +5,14 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/api/(.*)",
+      "destination": "https://phishguard-backend-880i.onrender.com/api/$1"
+    },
+    {
+      "source": "/health",
+      "destination": "https://phishguard-backend-880i.onrender.com/api/health"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

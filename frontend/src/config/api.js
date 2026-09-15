@@ -86,9 +86,8 @@ export function resolveApiBaseUrl() {
   }
 
   if (IS_PRODUCTION) {
-    // In production on Vercel: default to relative /api
-    // This supports Vercel rewrites and prevents mixed content
-    return '/api';
+    // In production on Vercel: connect directly to live FastAPI backend on Render
+    return 'https://phishguard-backend-880i.onrender.com/api';
   }
 
   // Local development on localhost/127.0.0.1
