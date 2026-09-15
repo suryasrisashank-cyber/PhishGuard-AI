@@ -55,12 +55,13 @@ app = FastAPI(
 
 from .core.config import settings
 
-# Construct CORS origins dynamically: local defaults + configured production origins
+# Construct CORS origins dynamically: local defaults + production Vercel frontend + custom origins
 default_origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "https://phish-guard-ai-suryasrisashank-cybers-projects.vercel.app",
 ]
 custom_origins = [
     o.strip()
@@ -72,7 +73,7 @@ allowed_origins = list(dict.fromkeys(default_origins + custom_origins))
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_origin_regex=r"^https?://.*$",
+    allow_origin_regex=r"^https?:\/\/([a-zA-Z0-9-.]+\.vercel\.app|localhost|127\.0\.0\.1)(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

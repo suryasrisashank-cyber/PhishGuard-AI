@@ -19,12 +19,14 @@ import SplunkPage from './pages/SplunkPage.jsx';
 import ReportsPage from './pages/ReportsPage.jsx';
 import ScanHistoryPage from './pages/ScanHistoryPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
+import { BackendStatusProvider } from './context/BackendStatusContext.jsx';
 
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<AppShell />}>
+      <BackendStatusProvider>
+        <Routes>
+          <Route path="/" element={<AppShell />}>
           <Route index element={<DashboardPage />} />
           <Route path="scanner/url" element={<UrlScannerPage />} />
           <Route path="scanner/website" element={<WebsiteAnalyzerPage />} />
@@ -51,6 +53,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
+      </BackendStatusProvider>
     </BrowserRouter>
   );
 }

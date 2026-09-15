@@ -3,26 +3,16 @@
  * Centralized communication layer for all SOC analysis, telemetry, and SIEM endpoints.
  */
 import axios from 'axios';
-import {
-  API_URL,
-  IS_BACKEND_CONFIGURED,
-  IS_PRODUCTION,
-  getHealthUrl,
-} from '../lib/constants.js';
+import { API_BASE_URL, getHealthUrl } from '../config/api.js';
 
 const api = axios.create({
-  baseURL: API_URL || '/api',
-  timeout: 45000,
+  baseURL: API_BASE_URL,
+  timeout: 30000,
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Request interceptor — fail fast if backend is unconfigured in production & attach token
+// Request interceptor — attach token if present
 api.interceptors.request.use((config) => {
-  if (!IS_BACKEND_CONFIGURED && IS_PRODUCTION) {
-    return Promise.reject(
-      new Error('Backend unavailable. Public HTTPS backend URL is not configured. Click "Connect Live Backend" or add VITE_API_URL in Vercel.')
-    );
-  }
   const token = localStorage.getItem('phishguard_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -30,25 +20,47 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Response interceptor — normalize errors
+// Response interceptor — Phase 17 Centralized API Error Handling Layer
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.code === 'ECONNABORTED') {
-      return Promise.reject(new Error('Backend request timed out (45s limit). Render cold-start may be in progress; please retry in a moment.'));
+    // 1. Timeout handling
+    if (error.code === 'ECONNABORTED' || (error.message && error.message.toLowerCase().includes('timeout'))) {
+      return Promise.reject(new Error('The backend did not respond within the expected time.'));
     }
+
+    // 2. Network / Connection Refused / DNS Error
     if (!error.response) {
-      if (!IS_BACKEND_CONFIGURED && IS_PRODUCTION) {
-        return Promise.reject(new Error('Backend unavailable. Please configure your backend URL in Settings or VITE_API_URL in Vercel.'));
+      if (error.code === 'ERR_NETWORK' || (error.message && error.message.includes('Network Error'))) {
+        return Promise.reject(new Error('The SOC backend could not be reached.'));
       }
-      return Promise.reject(new Error('Backend unavailable. Ensure the FastAPI service is running and reachable.'));
+      return Promise.reject(new Error('The SOC backend is currently unavailable.'));
     }
-    if (error.response.status === 401) {
-      localStorage.removeItem('phishguard_token');
-      return Promise.reject(new Error('Session expired. Please log in again.'));
+
+    const { status, data } = error.response;
+
+    // 3. HTTP Status code mappings
+    switch (status) {
+      case 401:
+        localStorage.removeItem('phishguard_token');
+        return Promise.reject(new Error('Authentication is required.'));
+      case 403:
+        return Promise.reject(new Error('Access denied.'));
+      case 429:
+        return Promise.reject(new Error('Request limit reached. Please try again later.'));
+      case 500:
+        return Promise.reject(new Error('SOC backend encountered an internal error.'));
+      case 502:
+      case 503:
+      case 504:
+        return Promise.reject(new Error('SOC backend is temporarily unavailable.'));
+      default:
+        const detailMsg = data?.detail || data?.message;
+        if (detailMsg && typeof detailMsg === 'string') {
+          return Promise.reject(new Error(detailMsg));
+        }
+        return Promise.reject(new Error('Unable to connect to SOC backend.'));
     }
-    const message = error.response.data?.detail || error.response.data?.message || `API error ${error.response.status}`;
-    return Promise.reject(new Error(message));
   }
 );
 

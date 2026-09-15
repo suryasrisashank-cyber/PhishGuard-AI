@@ -1,9 +1,11 @@
 import React from 'react';
-import { Search, Bell, Menu, Shield, Command, Sun, Moon } from 'lucide-react';
+import { Search, Bell, Menu, Shield, Command, Sun, Moon, Wifi, WifiOff, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useBackendStatus } from '../../context/BackendStatusContext.jsx';
 
 export default function TopBar({ onMobileMenuOpen, onCommandPalette, theme, onToggleTheme }) {
   const navigate = useNavigate();
+  const { status, latency, retryConnection } = useBackendStatus();
 
   return (
     <header className="glass-card" style={{
@@ -53,6 +55,59 @@ export default function TopBar({ onMobileMenuOpen, onCommandPalette, theme, onTo
       </button>
 
       <div style={{ flex: 1 }} />
+
+      {/* Backend Health Status Badge */}
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        {status === 'CONNECTED' ? (
+          <div
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              fontSize: 11, fontWeight: 600, color: '#10b981',
+              background: 'rgba(16,185,129,0.08)',
+              border: '1px solid rgba(16,185,129,0.2)',
+              padding: '4px 10px', borderRadius: 8,
+              fontFamily: 'var(--font-mono)',
+            }}
+            title={latency ? `API Online (${latency}ms)` : 'API Online'}
+          >
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981' }} />
+            <span className="hidden sm:inline">API ONLINE</span>
+            {latency && <span style={{ opacity: 0.7, fontSize: 10 }}>{latency}ms</span>}
+          </div>
+        ) : status === 'CONNECTING' ? (
+          <div
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              fontSize: 11, fontWeight: 600, color: '#00c2ff',
+              background: 'rgba(0,194,255,0.08)',
+              border: '1px solid rgba(0,194,255,0.2)',
+              padding: '4px 10px', borderRadius: 8,
+              fontFamily: 'var(--font-mono)',
+            }}
+          >
+            <RefreshCw size={11} className="animate-spin text-cyan-400" />
+            <span className="hidden sm:inline">CONNECTING...</span>
+          </div>
+        ) : (
+          <button
+            onClick={retryConnection}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              fontSize: 11, fontWeight: 600, color: '#f87171',
+              background: 'rgba(239,68,68,0.08)',
+              border: '1px solid rgba(239,68,68,0.2)',
+              padding: '4px 10px', borderRadius: 8,
+              fontFamily: 'var(--font-mono)',
+              cursor: 'pointer',
+            }}
+            title="Backend unavailable. Click to retry connection."
+          >
+            <WifiOff size={11} />
+            <span className="hidden sm:inline">API OFFLINE</span>
+            <span style={{ fontSize: 10, textDecoration: 'underline' }}>Retry</span>
+          </button>
+        )}
+      </div>
 
       {/* Theme Toggle (Dark / Light) */}
       <button
