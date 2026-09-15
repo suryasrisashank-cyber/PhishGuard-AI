@@ -56,17 +56,137 @@
   --glow-green: 0 0 20px rgba(16, 185, 129, 0.15);
 }
 
-/* Light Mode Override */
+/* Sidebar Layout */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.25s ease, transform 0.25s ease;
+  overflow: hidden;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border-subtle);
+}
+.sidebar-expanded { width: 240px; }
+.sidebar-collapsed { width: 64px; }
+@media (max-width: 767px) {
+  .sidebar {
+    width: 260px;
+    transform: translateX(-100%);
+  }
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+}
+
+/* Light Mode Theme Overrides */
 html.light-mode {
-  --bg-primary: #f8fafc;
+  --bg-primary: #f1f5f9;
   --bg-surface: #ffffff;
-  --bg-card: rgba(255, 255, 255, 0.95);
-  --bg-card-hover: rgba(241, 245, 249, 1);
+  --bg-card: #ffffff;
+  --bg-card-hover: #f8fafc;
   --text-primary: #0f172a;
   --text-muted: #334155;
   --text-dim: #64748b;
-  --border-subtle: rgba(15, 23, 42, 0.08);
-  --border-accent: rgba(0, 194, 255, 0.4);
+  --border-subtle: rgba(15, 23, 42, 0.1);
+  --border-accent: rgba(0, 160, 220, 0.5);
+
+  --glow-cyan: 0 4px 16px rgba(0, 160, 220, 0.1);
+  --glow-red: 0 4px 16px rgba(220, 38, 38, 0.1);
+  --glow-green: 0 4px 16px rgba(16, 185, 129, 0.1);
+}
+
+html.light-mode .glass-card {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 20px rgba(15, 23, 42, 0.03);
+}
+
+html.light-mode .glass-card-hover:hover {
+  background: #f8fafc;
+  border-color: rgba(0, 160, 220, 0.35);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
+}
+
+html.light-mode .neon-text {
+  color: #0284c7;
+}
+
+html.light-mode input,
+html.light-mode textarea,
+html.light-mode select {
+  color: #0f172a;
+}
+
+html.light-mode input::placeholder,
+html.light-mode textarea::placeholder {
+  color: #94a3b8;
+}
+
+html.light-mode .cyber-input {
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.14);
+  color: #0f172a;
+}
+html.light-mode .cyber-input:focus {
+  border-color: #0284c7;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+}
+
+html.light-mode .cyber-table th {
+  color: #475569;
+  border-bottom-color: rgba(15, 23, 42, 0.1);
+  background: #f8fafc;
+}
+html.light-mode .cyber-table td {
+  color: #0f172a;
+  border-bottom-color: rgba(15, 23, 42, 0.06);
+}
+html.light-mode .cyber-table tr:hover td {
+  background: #f8fafc;
+}
+
+/* Light mode card typography */
+html.light-mode .glass-card h1,
+html.light-mode .glass-card h2,
+html.light-mode .glass-card h3,
+html.light-mode .glass-card h4 {
+  color: #0f172a;
+}
+
+html.light-mode .glass-card p {
+  color: #475569;
+}
+
+/* Code blocks / monospace previews in light mode */
+html.light-mode pre,
+html.light-mode code {
+  color: #0f172a;
+}
+
+/* Retain high-contrast white text on solid buttons, badges & colored chips */
+html.light-mode .btn-primary,
+html.light-mode .btn-danger,
+html.light-mode .btn-primary *,
+html.light-mode .btn-danger *,
+html.light-mode [class*="bg-emerald-500"] *,
+html.light-mode [class*="bg-red-500"] *,
+html.light-mode [class*="bg-amber-500"] *,
+html.light-mode [class*="bg-blue-600"] *,
+html.light-mode [class*="bg-cyber-blue"] * {
+  color: #ffffff !important;
+}
+
+html.light-mode .btn-ghost {
+  border-color: rgba(15, 23, 42, 0.12);
+  color: #334155;
+}
+html.light-mode .btn-ghost:hover {
+  background: rgba(15, 23, 42, 0.04);
+  color: #0f172a;
 }
 
 /* =============================================

@@ -25,10 +25,9 @@ export default function SplunkPage() {
       } else {
         setStatus({
           status: 'UNAVAILABLE',
-          status_label: 'Local Lab / Not Available in Cloud',
           configured: false,
-          endpoint: '127.0.0.1:8088',
-          details: 'Splunk HEC is a local machine integration. When running in cloud, local Windows Splunk is isolated and not exposed to the internet.',
+          endpoint: 'Backend Unreachable',
+          message: 'Unable to retrieve Splunk status from backend.',
         });
       }
       if (splRes.status === 'fulfilled') {
@@ -98,11 +97,20 @@ export default function SplunkPage() {
             </h3>
 
             <div className="p-3 rounded-lg bg-black/30 border border-white/5 space-y-2 text-xs font-mono">
-              <div className="flex justify-between">
-                <span className="text-slate-400">Configuration:</span>
-                <span className={status?.configured ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold'}>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400">Status:</span>
+                <span className={`font-bold px-2 py-0.5 rounded text-[11px] ${
+                  status?.status === 'CONNECTED' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
+                  status?.status === 'LOCAL ONLY' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' :
+                  status?.status === 'NOT CONFIGURED' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
+                  'bg-red-500/20 text-red-400 border border-red-500/30'
+                }`}>
                   {status?.status || 'UNKNOWN'}
                 </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Endpoint:</span>
+                <span className="text-slate-200">{status?.endpoint || 'Not configured'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400">Target Index:</span>
@@ -113,10 +121,20 @@ export default function SplunkPage() {
                 <span className="text-slate-300">{status?.default_sourcetype || 'phishguard:scan'}</span>
               </div>
               <div className="flex justify-between">
+                <span className="text-slate-400">Environment:</span>
+                <span className="text-slate-300">{status?.environment === 'cloud' ? 'Cloud Deployment' : 'Local Lab'}</span>
+              </div>
+              <div className="flex justify-between">
                 <span className="text-slate-400">TLS Verification:</span>
                 <span className="text-slate-300">{status?.verify_tls ? 'Strict' : 'Disabled'}</span>
               </div>
             </div>
+
+            {status?.message && (
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                {status.message}
+              </p>
+            )}
 
             <button
               onClick={handleTestConnection}
@@ -130,10 +148,11 @@ export default function SplunkPage() {
             {testResult && (
               <div className={`p-3 rounded-lg text-xs font-mono border ${
                 testResult.status === 'CONNECTED' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' :
+                testResult.status === 'LOCAL ONLY' ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400' :
                 testResult.status === 'NOT CONFIGURED' ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' :
                 'bg-red-500/10 border-red-500/30 text-red-400'
               }`}>
-                <p className="font-bold">STATUS: {testResult.status}</p>
+                <p className="font-bold">RESULT: {testResult.status}</p>
                 <p className="mt-1 text-[11px] opacity-90">{testResult.message}</p>
               </div>
             )}

@@ -22,13 +22,30 @@ class SplunkSendRequest(BaseModel):
 def get_splunk_status():
     """Return runtime status of Splunk integration without exposing secrets."""
     is_conf = splunk_service.is_configured
+    is_cloud = getattr(settings, "is_cloud_deployment", False)
+    raw_url = (settings.splunk_hec_url or "").strip()
+    is_loopback = any(h in raw_url for h in ("127.0.0.1", "localhost", "0.0.0.0"))
+
+    if not is_conf:
+        status_code = "NOT CONFIGURED"
+        msg = "Splunk HEC URL and Token must be provided in backend environment."
+    elif is_cloud and is_loopback:
+        status_code = "LOCAL ONLY"
+        msg = "Splunk HEC is configured for local machine (127.0.0.1). Isolated in local lab and not exposed to cloud."
+    else:
+        status_code = "CONFIGURED"
+        msg = "Splunk HEC configured and ready for connection verification."
+
     return {
         "configured": is_conf,
         "host_configured": bool(settings.splunk_host or settings.splunk_hec_url),
-        "index": settings.splunk_index,
-        "default_sourcetype": settings.splunk_sourcetype,
+        "endpoint": splunk_service.get_sanitized_endpoint(),
+        "index": settings.splunk_index or "phishguard",
+        "default_sourcetype": settings.splunk_sourcetype or "phishguard:scan",
         "verify_tls": settings.splunk_verify_tls,
-        "status": "CONFIGURED" if is_conf else "NOT CONFIGURED",
+        "environment": "cloud" if is_cloud else "local",
+        "status": status_code,
+        "message": msg,
     }
 
 

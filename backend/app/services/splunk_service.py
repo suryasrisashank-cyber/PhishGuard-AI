@@ -42,6 +42,18 @@ class SplunkService:
     def is_configured(self) -> bool:
         return bool(self.hec_url and self.token)
 
+    def get_sanitized_endpoint(self) -> str:
+        """Return safe scheme://host:port without secrets."""
+        if not self.hec_url:
+            return "Not configured"
+        try:
+            from urllib.parse import urlparse
+            p = urlparse(self.hec_url)
+            port_str = f":{p.port}" if p.port else ""
+            return f"{p.scheme}://{p.hostname}{port_str}"
+        except Exception:
+            return "Configured"
+
     def test_connection(self) -> dict[str, Any]:
         """Test active connectivity with Splunk HEC health or raw endpoint."""
         if not self.is_configured:
@@ -49,7 +61,16 @@ class SplunkService:
                 "status": "NOT CONFIGURED",
                 "configured": False,
                 "connected": False,
-                "message": "Splunk HEC URL and Token must be provided in environment variables.",
+                "message": "Splunk HEC URL and Token must be provided in backend environment.",
+            }
+
+        # Cloud deployment loopback check
+        if getattr(settings, "is_cloud_deployment", False) and any(h in self.hec_url for h in ("127.0.0.1", "localhost", "0.0.0.0")):
+            return {
+                "status": "LOCAL ONLY",
+                "configured": True,
+                "connected": False,
+                "message": "Splunk HEC is configured for local machine (127.0.0.1). When FastAPI is hosted in the cloud, local Windows Splunk is isolated and not exposed to the internet.",
             }
 
         health_endpoint = f"{self.hec_url}/services/collector/health"
@@ -65,18 +86,32 @@ class SplunkService:
                 }
             elif resp.status_code in (401, 403):
                 return {
-                    "status": "ERROR",
+                    "status": "INVALID CREDENTIALS",
                     "configured": True,
                     "connected": False,
                     "message": f"Splunk rejected token (HTTP {resp.status_code}). Please verify SPLUNK_HEC_TOKEN.",
                 }
+            elif resp.status_code >= 500:
+                return {
+                    "status": "PROVIDER ERROR",
+                    "configured": True,
+                    "connected": False,
+                    "message": f"Splunk returned server error HTTP {resp.status_code}.",
+                }
             else:
                 return {
-                    "status": "ERROR",
+                    "status": "UNAVAILABLE",
                     "configured": True,
                     "connected": False,
                     "message": f"Splunk returned HTTP {resp.status_code}: {resp.text[:100]}",
                 }
+        except requests.exceptions.SSLError:
+            return {
+                "status": "TLS ERROR",
+                "configured": True,
+                "connected": False,
+                "message": "A secure TLS connection to Splunk HEC could not be verified.",
+            }
         except requests.exceptions.ConnectionError:
             return {
                 "status": "UNAVAILABLE",
@@ -86,14 +121,14 @@ class SplunkService:
             }
         except requests.exceptions.Timeout:
             return {
-                "status": "UNAVAILABLE",
+                "status": "TIMEOUT",
                 "configured": True,
                 "connected": False,
                 "message": "Splunk HEC request timed out after 4 seconds.",
             }
         except Exception as exc:
             return {
-                "status": "ERROR",
+                "status": "PROVIDER ERROR",
                 "configured": True,
                 "connected": False,
                 "message": f"Splunk error: {type(exc).__name__} - {str(exc)[:150]}",

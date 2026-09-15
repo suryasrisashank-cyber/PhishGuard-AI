@@ -2,6 +2,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar.jsx';
 import TopBar from './TopBar.jsx';
+import Footer from './Footer.jsx';
 import CommandPalette from '../CommandPalette.jsx';
 import useCommandPalette from '../../hooks/useCommandPalette.js';
 import { useBackendStatus } from '../../context/BackendStatusContext.jsx';
@@ -98,6 +99,10 @@ export default function AppShell() {
   const mainStyle = {
     marginLeft: expanded ? 240 : 64,
     minHeight: '100vh',
+    display: 'flex',
+    flexDirection: 'column',
+    flex: 1,
+    width: '100%',
     background: 'var(--bg-primary)',
     transition: 'margin-left 0.25s ease, background-color 0.25s ease',
   };
@@ -183,11 +188,13 @@ export default function AppShell() {
           </div>
         )}
 
-        <main style={{ padding: '24px', minHeight: 'calc(100vh - 60px)' }}>
+        <main style={{ padding: '24px', flex: 1 }}>
           <Suspense fallback={<PageLoader />}>
             <Outlet />
           </Suspense>
         </main>
+
+        <Footer />
       </div>
 
       <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} />

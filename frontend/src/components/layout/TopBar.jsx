@@ -10,7 +10,7 @@ export default function TopBar({ onMobileMenuOpen, onCommandPalette, theme, onTo
   return (
     <header className="glass-card" style={{
       position: 'sticky', top: 0, zIndex: 20,
-      borderBottom: '1px solid rgba(255,255,255,0.06)',
+      borderBottom: '1px solid var(--border-subtle)',
       borderTop: 'none', borderLeft: 'none', borderRight: 'none',
       borderRadius: 0,
       padding: '0 24px',
@@ -29,27 +29,78 @@ export default function TopBar({ onMobileMenuOpen, onCommandPalette, theme, onTo
         <Menu size={18} />
       </button>
 
-      {/* Global search launcher */}
+      {/* Global search launcher — Strictly Horizontal Layout */}
       <button
         onClick={onCommandPalette}
+        className="search-launcher"
         style={{
-          flex: 1, maxWidth: 440,
-          display: 'flex', alignItems: 'center', gap: 10,
-          background: 'rgba(255,255,255,0.04)',
-          border: '1px solid rgba(255,255,255,0.06)',
+          flex: '1 1 auto',
+          maxWidth: 460,
+          minWidth: 140,
+          height: 38,
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 8,
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border-subtle)',
           borderRadius: 10,
-          padding: '8px 14px',
-          color: '#64748b',
-          cursor: 'text',
+          padding: '0 12px',
+          color: 'var(--text-dim)',
+          cursor: 'pointer',
           fontSize: 13,
-          transition: 'border-color 0.2s',
+          transition: 'border-color 0.2s, box-shadow 0.2s',
+          overflow: 'hidden',
+          whiteSpace: 'nowrap',
+          boxSizing: 'border-box',
         }}
-        aria-label="Open global search (Ctrl+K)"
+        aria-label="Open global search (Ctrl + K)"
+        title="Search anything... (Ctrl + K)"
       >
-        <Search size={14} style={{ flexShrink: 0 }} />
-        <span style={{ flex: 1, textAlign: 'left' }}>Global Search: URLs, Domains, IPs, IOCs...</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 3, background: 'rgba(255,255,255,0.06)', borderRadius: 4, padding: '2px 6px', fontSize: 11 }}>
-          <Command size={10} />
+        <div style={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 8,
+          minWidth: 0,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          flex: 1,
+        }}>
+          <Search size={14} style={{ flexShrink: 0, color: 'var(--accent-cyan)' }} />
+          <span style={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            color: 'var(--text-dim)',
+            fontSize: 13,
+            textAlign: 'left',
+          }}>
+            <span className="hidden sm:inline">Search anything...</span>
+            <span className="inline sm:hidden">Search...</span>
+          </span>
+        </div>
+
+        <div style={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 3,
+          flexShrink: 0,
+          background: 'var(--bg-card-hover)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 5,
+          padding: '2px 6px',
+          fontSize: 11,
+          fontFamily: 'var(--font-mono)',
+          color: 'var(--text-dim)',
+          lineHeight: 1,
+        }}>
+          <span className="hidden sm:inline">Ctrl</span>
+          <span className="inline sm:hidden">^</span>
+          <span style={{ opacity: 0.6 }}>+</span>
           <span>K</span>
         </div>
       </button>
@@ -131,8 +182,8 @@ export default function TopBar({ onMobileMenuOpen, onCommandPalette, theme, onTo
       <div style={{
         display: 'flex', alignItems: 'center', gap: 8,
         padding: '6px 10px',
-        background: 'rgba(255,255,255,0.04)',
-        border: '1px solid rgba(255,255,255,0.06)',
+        background: 'var(--bg-card)',
+        border: '1px solid var(--border-subtle)',
         borderRadius: 10,
         cursor: 'pointer',
       }} onClick={() => navigate('/settings')} role="button" aria-label="Open settings">

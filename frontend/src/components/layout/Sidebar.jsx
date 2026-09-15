@@ -86,9 +86,9 @@ export default function Sidebar({ expanded, onToggle, mobileOpen, onMobileClose 
         />
       )}
 
-      <aside className={sidebarClass} style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}>
+      <aside className={sidebarClass} style={{ borderRight: '1px solid var(--border-subtle)' }}>
         {/* Header */}
-        <div style={{ padding: '20px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 10, minHeight: 72 }}>
+        <div style={{ padding: '20px 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 10, minHeight: 72 }}>
           <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg,#00c2ff,#2563eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <Shield size={18} color="#fff" />
           </div>
@@ -127,7 +127,7 @@ export default function Sidebar({ expanded, onToggle, mobileOpen, onMobileClose 
                       textDecoration: 'none',
                       background: active ? 'rgba(0,194,255,0.1)' : 'transparent',
                       border: active ? '1px solid rgba(0,194,255,0.2)' : '1px solid transparent',
-                      color: active ? '#00c2ff' : '#94a3b8',
+                      color: active ? '#00c2ff' : 'var(--text-muted)',
                       transition: 'all 0.15s ease',
                       whiteSpace: 'nowrap',
                       overflow: 'hidden',
@@ -145,7 +145,7 @@ export default function Sidebar({ expanded, onToggle, mobileOpen, onMobileClose 
         </nav>
 
         {/* Footer */}
-        <div style={{ padding: '12px 8px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ padding: '12px 8px', borderTop: '1px solid var(--border-subtle)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 10px', marginBottom: 4 }} title={!expanded ? 'SOC Defensive Mode' : undefined}>
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', flexShrink: 0 }} />
             {(expanded || mobileOpen) && <span style={{ fontSize: 11, color: '#64748b', fontFamily: 'var(--font-mono)' }}>SOC Defensive Mode</span>}
