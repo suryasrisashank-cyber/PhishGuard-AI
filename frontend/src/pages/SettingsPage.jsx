@@ -9,7 +9,18 @@ import { useBackendStatus } from '../context/BackendStatusContext.jsx';
 import { getDeveloperApiOverride, setDeveloperApiOverride } from '../config/api.js';
 
 export default function SettingsPage() {
-  const { status, latency, version, environment, apiUrl, retryConnection } = useBackendStatus();
+  const {
+    status,
+    statusMessage,
+    latency,
+    version,
+    environment,
+    apiUrl,
+    healthUrl,
+    lastChecked,
+    errorType,
+    retryConnection,
+  } = useBackendStatus();
   const [checkingHealth, setCheckingHealth] = useState(false);
   const [showDevOptions, setShowDevOptions] = useState(false);
   const [customBackendInput, setCustomBackendInput] = useState(() => getDeveloperApiOverride());
@@ -78,8 +89,8 @@ export default function SettingsPage() {
               <div style={{ color: '#f1f5f9', fontWeight: 600, fontFamily: 'var(--font-mono)', marginTop: 2, wordBreak: 'break-all' }}>{apiUrl}</div>
             </div>
             <div style={{ background: 'rgba(255,255,255,0.02)', padding: '8px 12px', borderRadius: 8 }}>
-              <div style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase' }}>Backend Service</div>
-              <div style={{ color: '#00c2ff', fontWeight: 600, marginTop: 2 }}>PhishGuard AI API</div>
+              <div style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase' }}>Health Probe</div>
+              <div style={{ color: '#00c2ff', fontWeight: 600, fontFamily: 'var(--font-mono)', marginTop: 2, wordBreak: 'break-all' }}>{healthUrl || `${apiUrl}/health`}</div>
             </div>
             <div style={{ background: 'rgba(255,255,255,0.02)', padding: '8px 12px', borderRadius: 8 }}>
               <div style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase' }}>Engine Version</div>
@@ -90,10 +101,43 @@ export default function SettingsPage() {
               <div style={{ color: latency ? '#10b981' : '#64748b', fontWeight: 600, fontFamily: 'var(--font-mono)', marginTop: 2 }}>{latency ? `${latency} ms` : '—'}</div>
             </div>
             <div style={{ background: 'rgba(255,255,255,0.02)', padding: '8px 12px', borderRadius: 8 }}>
+              <div style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase' }}>Last Verified</div>
+              <div style={{ color: '#94a3b8', fontWeight: 600, fontFamily: 'var(--font-mono)', marginTop: 2 }}>{lastChecked ? new Date(lastChecked).toLocaleTimeString() : '—'}</div>
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.02)', padding: '8px 12px', borderRadius: 8 }}>
               <div style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase' }}>Environment</div>
               <div style={{ color: '#f59e0b', fontWeight: 600, textTransform: 'uppercase', marginTop: 2 }}>{environment}</div>
             </div>
           </div>
+
+          {status !== 'CONNECTED' && (
+            <div style={{
+              margin: '0 0 16px',
+              padding: '8px 12px',
+              borderRadius: 6,
+              background: status === 'CONNECTING' ? 'rgba(0,194,255,0.08)' : 'rgba(239,68,68,0.08)',
+              border: `1px solid ${status === 'CONNECTING' ? 'rgba(0,194,255,0.2)' : 'rgba(239,68,68,0.2)'}`,
+              fontSize: 12,
+              color: status === 'CONNECTING' ? '#38bdf8' : '#fca5a5',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 8,
+            }}>
+              <span><strong>Status:</strong> {statusMessage}</span>
+              {errorType && (
+                <span style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: 10,
+                  padding: '2px 6px',
+                  borderRadius: 4,
+                  background: 'rgba(0,0,0,0.2)',
+                }}>
+                  {errorType}
+                </span>
+              )}
+            </div>
+          )}
 
           <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 16 }}>
             <button className="btn-primary" onClick={handleTestHealth} disabled={checkingHealth} style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>

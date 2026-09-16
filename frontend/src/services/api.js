@@ -171,7 +171,7 @@ export const healthApi = {
     if (!url) {
       return Promise.reject(new Error('Backend unavailable. VITE_API_URL is not configured.'));
     }
-    return axios.get(url, { timeout: 5000 });
+    return axios.get(url, { timeout: 15000 });
   },
 };
 
