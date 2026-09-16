@@ -28,7 +28,7 @@ def get_splunk_status():
 
     if not is_conf:
         status_code = "NOT CONFIGURED"
-        msg = "Splunk HEC URL and Token must be provided in backend environment."
+        msg = "Splunk HEC URL and credentials must be provided in backend environment."
     elif is_cloud and is_loopback:
         status_code = "LOCAL ONLY"
         msg = "Splunk HEC is configured for local machine (127.0.0.1). Isolated in local lab and not exposed to cloud."

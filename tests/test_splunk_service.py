@@ -15,6 +15,8 @@ def test_splunk_status_endpoint():
     data = res.json()
     assert "status" in data
     assert "index" in data
+    assert "token" not in data
+    assert "splunk_hec_token" not in data
     assert "token" not in str(data).lower()
 
 
