@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import PageHeader from '../components/ui/PageHeader.jsx';
 import GlassCard from '../components/ui/GlassCard.jsx';
 import ScanProgress from '../components/scanner/ScanProgress.jsx';
@@ -8,10 +9,28 @@ import { Link2, Sparkles, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function UrlScannerPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [url, setUrl] = useState('');
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+
+  // Restore scan on browser refresh or when ?id= is in the URL
+  useEffect(() => {
+    const scanId = searchParams.get('id');
+    if (scanId) {
+      setScanning(true);
+      scansApi.get(scanId)
+        .then((res) => {
+          setResult(res.data);
+          if (res.data?.target) setUrl(res.data.target);
+        })
+        .catch((err) => {
+          setError(`Could not restore scan #${scanId}: ${err.message}`);
+        })
+        .finally(() => setScanning(false));
+    }
+  }, [searchParams]);
 
   const handleScan = async (targetUrl = url) => {
     const trimmed = targetUrl.trim();
@@ -26,6 +45,9 @@ export default function UrlScannerPage() {
     try {
       const response = await scansApi.scanUrl(trimmed);
       setResult(response.data);
+      if (response.data?.id) {
+        setSearchParams({ id: String(response.data.id) }, { replace: true });
+      }
       toast.success(`Analysis completed: ${response.data.verdict}`);
     } catch (err) {
       setError(err.message || 'Scan failed');
@@ -41,17 +63,17 @@ export default function UrlScannerPage() {
   };
 
   return (
-    <div>
+    <div style={{ width: '100%', maxWidth: '100%', overflowX: 'hidden' }}>
       <PageHeader
         title="URL Threat Scanner"
         subtitle="Heuristic deep-inspection for phishing patterns, typosquatting, IDN homoglyphs & redirect chains"
       />
 
       {/* Input Box */}
-      <GlassCard style={{ padding: 24, marginBottom: 24 }}>
+      <GlassCard style={{ padding: '20px 24px', marginBottom: 24, width: '100%', boxSizing: 'border-box' }}>
         <form onSubmit={(e) => { e.preventDefault(); handleScan(); }}>
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-            <div style={{ position: 'relative', flex: 1 }}>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{ position: 'relative', flex: '1 1 240px', minWidth: 0, width: '100%' }}>
               <input
                 type="text"
                 className="cyber-input"
@@ -59,11 +81,16 @@ export default function UrlScannerPage() {
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 disabled={scanning}
-                style={{ paddingLeft: 42 }}
+                style={{ paddingLeft: 42, width: '100%', minHeight: 44, boxSizing: 'border-box' }}
               />
               <Link2 size={18} color="#64748b" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
             </div>
-            <button type="submit" className="btn-primary" disabled={scanning || !url.trim()}>
+            <button
+              type="submit"
+              className="btn-primary"
+              disabled={scanning || !url.trim()}
+              style={{ minHeight: 44, padding: '0 22px', fontSize: 13, flexShrink: 0, minWidth: 120 }}
+            >
               {scanning ? 'Scanning...' : 'Analyze URL'}
             </button>
           </div>

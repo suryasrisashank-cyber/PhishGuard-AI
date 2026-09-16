@@ -179,7 +179,7 @@ export default function DashboardPage() {
           </div>
 
           {/* MIDDLE SECTION: 3D Globe + Trend + Verdict Distribution */}
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, marginBottom: 20 }}>
+          <div className="dashboard-grid-2-1" style={{ gap: 16, marginBottom: 20 }}>
             <GlassCard style={{ padding: 20 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                 <div>
@@ -202,7 +202,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Trend & Severity Matrix */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 16, marginBottom: 20 }}>
+          <div className="dashboard-grid-trend" style={{ gap: 16, marginBottom: 20 }}>
             <GlassCard style={{ padding: 20 }}>
               <h3 style={{ margin: '0 0 4px', fontSize: 14, fontWeight: 700, color: '#f1f5f9' }}>7-Day Threat Trend</h3>
               <p style={{ margin: '0 0 16px', fontSize: 11, color: '#64748b' }}>Total target volume versus identified attacks</p>

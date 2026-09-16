@@ -96,23 +96,15 @@ export default function AppShell() {
 
   const isBackendOffline = status === 'UNAVAILABLE' || status === 'TIMEOUT' || status === 'ERROR';
 
-  const mainStyle = {
-    marginLeft: expanded ? 240 : 64,
-    minHeight: '100vh',
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    width: '100%',
-    background: 'var(--bg-primary)',
-    transition: 'margin-left 0.25s ease, background-color 0.25s ease',
-  };
+  const location = useLocation();
 
-  if (typeof window !== 'undefined' && window.innerWidth < 768) {
-    mainStyle.marginLeft = 0;
-  }
+  // Close mobile drawer on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-primary)', color: 'var(--text-primary)', width: '100%', overflowX: 'hidden' }}>
       <Sidebar
         expanded={expanded}
         onToggle={() => setExpanded((e) => !e)}
@@ -120,7 +112,7 @@ export default function AppShell() {
         onMobileClose={() => setMobileOpen(false)}
       />
 
-      <div style={mainStyle}>
+      <div className={`app-main ${expanded ? 'sidebar-expanded' : 'sidebar-collapsed'}`}>
         <TopBar
           onMobileMenuOpen={() => setMobileOpen(true)}
           onCommandPalette={() => setCmdOpen(true)}
@@ -130,35 +122,21 @@ export default function AppShell() {
 
         {/* Non-blocking degraded mode alert when backend is unreachable */}
         {isBackendOffline && (
-          <div
-            style={{
-              margin: '16px 24px 0',
-              padding: '12px 18px',
-              borderRadius: 10,
-              background: 'rgba(239, 68, 68, 0.08)',
-              border: '1px solid rgba(239, 68, 68, 0.25)',
-              color: '#fca5a5',
-              fontSize: 13,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 12,
-              flexWrap: 'wrap',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <WifiOff size={16} color="#ef4444" style={{ flexShrink: 0 }} />
-              <span>
-                <strong>BACKEND UNAVAILABLE:</strong> {statusMessage} Operating in offline degraded mode with heuristic fallbacks.
+          <div className="backend-offline-banner">
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, minWidth: 0, flex: 1 }}>
+              <WifiOff size={18} color="#ef4444" style={{ flexShrink: 0, marginTop: 2 }} />
+              <span style={{ fontSize: 13, lineHeight: 1.5, wordBreak: 'break-word' }}>
+                <strong style={{ color: '#ef4444' }}>BACKEND UNAVAILABLE:</strong> {statusMessage} Operating in offline degraded mode with heuristic fallbacks.
               </span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div className="backend-offline-actions">
               <button
                 onClick={retryConnection}
+                className="touch-btn"
                 style={{
                   fontSize: 12,
                   fontWeight: 600,
-                  padding: '5px 12px',
+                  padding: '8px 14px',
                   borderRadius: 6,
                   background: 'rgba(255, 255, 255, 0.08)',
                   border: '1px solid rgba(255, 255, 255, 0.15)',
@@ -167,19 +145,22 @@ export default function AppShell() {
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: 6,
+                  minHeight: 38,
                 }}
               >
                 <RefreshCw size={12} /> Retry Connection
               </button>
               <span
                 style={{
-                  fontSize: 11,
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: 10,
                   fontWeight: 700,
-                  padding: '3px 8px',
-                  borderRadius: 6,
+                  padding: '4px 8px',
+                  borderRadius: 4,
                   background: 'rgba(239,68,68,0.2)',
                   border: '1px solid rgba(239,68,68,0.4)',
                   color: '#f87171',
+                  whiteSpace: 'nowrap',
                 }}
               >
                 OFFLINE MODE
@@ -188,7 +169,7 @@ export default function AppShell() {
           </div>
         )}
 
-        <main style={{ padding: '24px', flex: 1 }}>
+        <main className="app-content">
           <Suspense fallback={<PageLoader />}>
             <Outlet />
           </Suspense>

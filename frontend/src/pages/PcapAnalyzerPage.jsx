@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { scansApi, investigationsApi, splunkApi } from '../services/api.js';
 import PageHeader from '../components/ui/PageHeader.jsx';
 import GlassCard from '../components/ui/GlassCard.jsx';
@@ -10,12 +10,29 @@ import { Network, Upload, ArrowRight, Send, AlertTriangle, Activity, Globe, Shie
 
 export default function PcapAnalyzerPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [splunkStatus, setSplunkStatus] = useState(null);
   const [caseCreating, setCaseCreating] = useState(false);
+
+  // Restore PCAP scan on browser refresh
+  useEffect(() => {
+    const scanId = searchParams.get('id');
+    if (scanId) {
+      setLoading(true);
+      scansApi.get(scanId)
+        .then((res) => {
+          setResult(res.data);
+        })
+        .catch((err) => {
+          setError(`Could not restore PCAP scan #${scanId}: ${err.message}`);
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [searchParams]);
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -34,6 +51,9 @@ export default function PcapAnalyzerPage() {
     try {
       const res = await scansApi.scanPcap(file);
       setResult(res.data);
+      if (res.data?.id) {
+        setSearchParams({ id: String(res.data.id) }, { replace: true });
+      }
     } catch (err) {
       setError(err.message || 'PCAP analysis failed.');
     } finally {

@@ -5,10 +5,24 @@ from ..core.config import settings
 
 logger = logging.getLogger(__name__)
 
-engine = create_engine(
-    settings.database_url,
-    connect_args={"check_same_thread": False} if settings.database_url.startswith("sqlite") else {},
-)
+# Resolve database connection URL (support Render PostgreSQL and SQLite)
+raw_db_url = (settings.database_url or "sqlite:///./phishguard.db").strip()
+if raw_db_url.startswith("postgres://"):
+    raw_db_url = raw_db_url.replace("postgres://", "postgresql://", 1)
+
+if raw_db_url.startswith("sqlite"):
+    engine = create_engine(
+        raw_db_url,
+        connect_args={"check_same_thread": False},
+    )
+else:
+    engine = create_engine(
+        raw_db_url,
+        pool_pre_ping=True,
+        pool_size=10,
+        max_overflow=20,
+    )
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 

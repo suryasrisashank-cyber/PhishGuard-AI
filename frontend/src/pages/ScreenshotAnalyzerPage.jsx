@@ -1,19 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import PageHeader from '../components/ui/PageHeader.jsx';
 import GlassCard from '../components/ui/GlassCard.jsx';
 import IndicatorList from '../components/scanner/IndicatorList.jsx';
 import AnalystActions from '../components/scanner/AnalystActions.jsx';
 import TechDetails from '../components/scanner/TechDetails.jsx';
-import { screenshotsApi } from '../services/api.js';
+import { screenshotsApi, scansApi } from '../services/api.js';
 import { Image, Upload, AlertCircle, Info } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function ScreenshotAnalyzerPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+
+  // Restore screenshot scan on browser refresh
+  useEffect(() => {
+    const scanId = searchParams.get('id');
+    if (scanId) {
+      setScanning(true);
+      scansApi.get(scanId)
+        .then((res) => {
+          setResult(res.data);
+        })
+        .catch((err) => {
+          setError(`Could not restore screenshot #${scanId}: ${err.message}`);
+        })
+        .finally(() => setScanning(false));
+    }
+  }, [searchParams]);
 
   const handleFileChange = (e) => {
     const selected = e.target.files?.[0];
@@ -35,6 +53,9 @@ export default function ScreenshotAnalyzerPage() {
     try {
       const response = await screenshotsApi.upload(file);
       setResult(response.data);
+      if (response.data?.id) {
+        setSearchParams({ id: String(response.data.id) }, { replace: true });
+      }
       toast.success('Heuristic image analysis complete');
     } catch (err) {
       setError(err.message || 'Screenshot analysis failed');

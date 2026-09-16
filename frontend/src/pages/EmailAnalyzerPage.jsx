@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import PageHeader from '../components/ui/PageHeader.jsx';
 import GlassCard from '../components/ui/GlassCard.jsx';
 import ScanProgress from '../components/scanner/ScanProgress.jsx';
@@ -8,12 +9,32 @@ import { Mail, UploadCloud, FileText, AlertCircle, Shield, FileCheck, Key } from
 import toast from 'react-hot-toast';
 
 export default function EmailAnalyzerPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [tab, setTab] = useState('text'); // 'text' | 'file'
   const [content, setContent] = useState('');
   const [file, setFile] = useState(null);
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+
+  // Restore scan on browser refresh or when ?id= is in the URL
+  useEffect(() => {
+    const scanId = searchParams.get('id');
+    if (scanId) {
+      setScanning(true);
+      scansApi.get(scanId)
+        .then((res) => {
+          setResult(res.data);
+          if (res.data?.target && res.data.target !== 'Pasted Email Content') {
+            setContent(res.data.target);
+          }
+        })
+        .catch((err) => {
+          setError(`Could not restore email scan #${scanId}: ${err.message}`);
+        })
+        .finally(() => setScanning(false));
+    }
+  }, [searchParams]);
 
   const handleScanText = async () => {
     if (!content.trim()) {
@@ -27,6 +48,9 @@ export default function EmailAnalyzerPage() {
     try {
       const response = await scansApi.scanEmail(content.trim());
       setResult(response.data);
+      if (response.data?.id) {
+        setSearchParams({ id: String(response.data.id) }, { replace: true });
+      }
       toast.success(`Email analysis completed: ${response.data.verdict}`);
     } catch (err) {
       setError(err.message || 'Email scan failed');
@@ -48,6 +72,9 @@ export default function EmailAnalyzerPage() {
     try {
       const response = await scansApi.scanEmailFile(file);
       setResult(response.data);
+      if (response.data?.id) {
+        setSearchParams({ id: String(response.data.id) }, { replace: true });
+      }
       toast.success(`Email file analyzed: ${response.data.verdict}`);
     } catch (err) {
       setError(err.message || 'File upload failed');

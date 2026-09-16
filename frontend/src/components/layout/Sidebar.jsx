@@ -20,6 +20,7 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  X,
 } from 'lucide-react';
 
 const navSections = [
@@ -80,7 +81,7 @@ export default function Sidebar({ expanded, onToggle, mobileOpen, onMobileClose 
     <>
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm md:hidden"
+          className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm md:hidden"
           onClick={onMobileClose}
           aria-label="Close menu"
         />
@@ -88,22 +89,32 @@ export default function Sidebar({ expanded, onToggle, mobileOpen, onMobileClose 
 
       <aside className={sidebarClass} style={{ borderRight: '1px solid var(--border-subtle)' }}>
         {/* Header */}
-        <div style={{ padding: '20px 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 10, minHeight: 72 }}>
+        <div style={{ padding: '16px 14px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 10, minHeight: 64 }}>
           <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg,#00c2ff,#2563eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <Shield size={18} color="#fff" />
           </div>
           {(expanded || mobileOpen) && (
-            <div style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}>
+            <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', flex: 1 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: '#00c2ff', lineHeight: 1.2 }}>PhishGuard AI</div>
               <div style={{ fontSize: 10, color: '#64748b', fontWeight: 500 }}>3.0 — Real-World SOC</div>
             </div>
           )}
+          {mobileOpen && (
+            <button
+              onClick={onMobileClose}
+              className="btn-ghost touch-btn md:hidden"
+              style={{ padding: '6px', minWidth: 36, minHeight: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              aria-label="Close navigation"
+            >
+              <X size={18} color="var(--text-dim)" />
+            </button>
+          )}
         </div>
 
         {/* Navigation Sections */}
-        <nav style={{ flex: 1, padding: '12px 8px', overflowY: 'auto' }}>
+        <nav style={{ flex: 1, padding: '10px 8px', overflowY: 'auto' }}>
           {navSections.map((section) => (
-            <div key={section.title} style={{ marginBottom: 14 }}>
+            <div key={section.title} style={{ marginBottom: 12 }}>
               {(expanded || mobileOpen) && (
                 <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: '#64748b', padding: '4px 10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   {section.title}
@@ -117,11 +128,13 @@ export default function Sidebar({ expanded, onToggle, mobileOpen, onMobileClose 
                     to={path}
                     onClick={onMobileClose}
                     title={!expanded ? label : undefined}
+                    className="touch-btn"
                     style={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: 10,
-                      padding: '8px 10px',
+                      padding: '9px 10px',
+                      minHeight: 40,
                       borderRadius: 8,
                       marginBottom: 2,
                       textDecoration: 'none',
@@ -131,6 +144,7 @@ export default function Sidebar({ expanded, onToggle, mobileOpen, onMobileClose 
                       transition: 'all 0.15s ease',
                       whiteSpace: 'nowrap',
                       overflow: 'hidden',
+                      boxSizing: 'border-box',
                     }}
                   >
                     <Icon size={16} style={{ flexShrink: 0 }} />

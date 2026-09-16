@@ -61,22 +61,22 @@ export default function ScanResultPanel({ scan }) {
       <AIExplanationCard scan={scan} />
 
       {/* Large Premium Risk Result Hero Card */}
-      <GlassCard style={{ padding: 24, marginBottom: 16 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: 28, alignItems: 'center', flexWrap: 'wrap' }}>
+      <GlassCard style={{ padding: 24, marginBottom: 16, width: '100%', boxSizing: 'border-box' }}>
+        <div className="scan-hero-grid">
           {/* Risk Gauge */}
-          <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
-            <RiskMeter value={scan.risk_score || 0} size={150} />
-            <div style={{ width: 1, height: 90, background: 'rgba(255,255,255,0.08)' }} />
+          <div style={{ display: 'flex', gap: 20, alignItems: 'center', justifyContent: 'center' }}>
+            <RiskMeter value={scan.risk_score || 0} size={140} />
+            <div className="scan-hero-divider" style={{ width: 1, height: 85, background: 'rgba(255,255,255,0.08)' }} />
           </div>
 
           {/* Verdict and Classification Details */}
-          <div>
+          <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: 11, color: '#64748b', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
               SECURITY VERDICT
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' }}>
               <span style={{
-                fontSize: 26, fontWeight: 900, letterSpacing: '0.02em',
+                fontSize: 24, fontWeight: 900, letterSpacing: '0.02em',
                 color: scan.verdict === 'Malicious' ? '#ef4444' : scan.verdict === 'Suspicious' ? '#f59e0b' : '#10b981',
               }}>
                 {scan.verdict?.toUpperCase()}
@@ -84,7 +84,7 @@ export default function ScanResultPanel({ scan }) {
               <SeverityBadge severity={scan.severity} />
               <StatusBadge status={scan.investigation_status} />
             </div>
-            <p style={{ margin: '0 0 10px', fontSize: 13, color: '#94a3b8', lineHeight: 1.6, maxWidth: 640 }}>
+            <p style={{ margin: '0 0 10px', fontSize: 13, color: '#94a3b8', lineHeight: 1.6, maxWidth: 640, wordBreak: 'break-word' }}>
               {scan.summary}
             </p>
             <div style={{ fontSize: 12, color: '#64748b' }}>
@@ -93,15 +93,23 @@ export default function ScanResultPanel({ scan }) {
           </div>
 
           {/* Confidence and Quick Actions */}
-          <div style={{ minWidth: 220, borderLeft: '1px solid rgba(255,255,255,0.06)', paddingLeft: 24 }}>
-            <div style={{ marginBottom: 16 }}>
+          <div className="scan-hero-actions">
+            <div style={{ marginBottom: 14 }}>
               <ConfidenceMeter value={scan.confidence_score} />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <button className="btn-primary" onClick={() => navigate(`/investigation/${scan.id}`)} style={{ fontSize: 12, padding: '8px 12px' }}>
+              <button
+                className="btn-primary touch-btn"
+                onClick={() => navigate(`/investigation/${scan.id}`)}
+                style={{ fontSize: 12, padding: '8px 14px', minHeight: 40, width: '100%' }}
+              >
                 Open SOC Dossier
               </button>
-              <button className="btn-ghost" onClick={copyReport} style={{ fontSize: 12, padding: '7px 12px' }}>
+              <button
+                className="btn-ghost touch-btn"
+                onClick={copyReport}
+                style={{ fontSize: 12, padding: '7px 14px', minHeight: 40, width: '100%' }}
+              >
                 Copy Case JSON
               </button>
             </div>
@@ -110,16 +118,19 @@ export default function ScanResultPanel({ scan }) {
       </GlassCard>
 
       {/* Tabbed Detail Sections */}
-      <GlassCard>
-        {/* Tab Header Bar */}
-        <div style={{ display: 'flex', gap: 2, padding: '12px 16px 0', borderBottom: '1px solid rgba(255,255,255,0.06)', flexWrap: 'wrap' }}>
+      <GlassCard style={{ width: '100%', boxSizing: 'border-box' }}>
+        {/* Tab Header Bar (Scrollable on mobile) */}
+        <div className="tab-header-scroll" style={{ display: 'flex', gap: 4, padding: '10px 14px 0', borderBottom: '1px solid var(--border-subtle)', overflowX: 'auto', whiteSpace: 'nowrap' }}>
           {TABS.map(t => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
+              className="touch-btn"
               style={{
                 background: 'none', border: 'none', cursor: 'pointer',
-                padding: '10px 14px',
+                padding: '10px 12px',
+                minHeight: 42,
+                flexShrink: 0,
                 fontSize: 13, fontWeight: tab === t.id ? 700 : 500,
                 color: tab === t.id ? '#00c2ff' : '#64748b',
                 borderBottom: tab === t.id ? '2px solid #00c2ff' : '2px solid transparent',

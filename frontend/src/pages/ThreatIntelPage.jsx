@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import PageHeader from '../components/ui/PageHeader.jsx';
 import GlassCard from '../components/ui/GlassCard.jsx';
 import ThreatBadge from '../components/ui/ThreatBadge.jsx';
@@ -8,18 +8,15 @@ import { Shield, Search, Globe, Server, AlertCircle, Activity, ExternalLink, Clo
 import toast from 'react-hot-toast';
 
 export default function ThreatIntelPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [domain, setDomain] = useState('');
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
 
-  const handleLookup = async (e) => {
-    if (e) e.preventDefault();
-    const trimmed = domain.trim().replace(/^https?:\/\//, '').split('/')[0];
-    if (!trimmed) {
-      toast.error('Enter a domain or host to look up');
-      return;
-    }
+  const executeLookup = async (targetDomain) => {
+    const trimmed = targetDomain.trim().replace(/^https?:\/\//, '').split('/')[0];
+    if (!trimmed) return;
     setLoading(true);
     setError(null);
     setData(null);
@@ -27,12 +24,31 @@ export default function ThreatIntelPage() {
     try {
       const res = await threatsApi.lookup(trimmed);
       setData(res.data);
+      setSearchParams({ domain: trimmed }, { replace: true });
       toast.success(`Lookup completed for ${trimmed}`);
     } catch (err) {
       setError(err.message || 'Threat intelligence lookup failed');
     } finally {
       setLoading(false);
     }
+  };
+
+  // Restore lookup on browser refresh
+  useEffect(() => {
+    const initialDomain = searchParams.get('domain');
+    if (initialDomain) {
+      setDomain(initialDomain);
+      executeLookup(initialDomain);
+    }
+  }, [searchParams]);
+
+  const handleLookup = async (e) => {
+    if (e) e.preventDefault();
+    if (!domain.trim()) {
+      toast.error('Enter a domain or host to look up');
+      return;
+    }
+    executeLookup(domain);
   };
 
   return (

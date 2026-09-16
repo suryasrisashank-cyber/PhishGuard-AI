@@ -346,3 +346,222 @@ body {
   transition: all 0.2s;
 }
 .btn-danger:hover { background: rgba(239,68,68,0.2); }
+
+/* =============================================
+   Responsive Layout & Containers
+   ============================================= */
+.app-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  transition: margin-left 0.25s ease;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .app-main.sidebar-expanded {
+    margin-left: 240px;
+    width: calc(100% - 240px);
+  }
+  .app-main.sidebar-collapsed {
+    margin-left: 64px;
+    width: calc(100% - 64px);
+  }
+}
+
+@media (max-width: 767px) {
+  .app-main {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+}
+
+.app-content {
+  flex: 1;
+  padding: 24px;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+@media (max-width: 767px) {
+  .app-content {
+    padding: 14px 12px;
+  }
+}
+
+/* =============================================
+   TopBar Responsive Rules
+   ============================================= */
+.topbar-container {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: 10px 24px;
+  border-bottom: 1px solid var(--border-subtle);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.topbar-desktop-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+}
+
+.topbar-mobile-row {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+@media (max-width: 767px) {
+  .topbar-container {
+    padding: 10px 12px;
+  }
+  .topbar-desktop-row {
+    display: none !important;
+  }
+  .topbar-mobile-row {
+    display: flex !important;
+  }
+  .topbar-mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+}
+
+/* =============================================
+   Backend Offline Banner
+   ============================================= */
+.backend-offline-banner {
+  background: rgba(239, 68, 68, 0.12);
+  border-bottom: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.backend-offline-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .backend-offline-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px 14px;
+    gap: 8px;
+  }
+  .backend-offline-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+/* =============================================
+   Dashboard Responsive Grids
+   ============================================= */
+.dashboard-grid-2-1 {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+}
+
+.dashboard-grid-trend {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+}
+
+@media (max-width: 900px) {
+  .dashboard-grid-2-1,
+  .dashboard-grid-trend {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* =============================================
+   Scan Hero Responsive Layout & Tabs
+   ============================================= */
+.scan-hero-grid {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 20px;
+}
+
+.scan-hero-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.scan-hero-divider {
+  display: block;
+}
+
+@media (max-width: 900px) {
+  .scan-hero-grid {
+    grid-template-columns: 1fr !important;
+    justify-items: start;
+    gap: 16px;
+  }
+  .scan-hero-actions {
+    align-items: flex-start !important;
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+  .scan-hero-divider {
+    display: none;
+  }
+}
+
+.tab-header-scroll {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.tab-header-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* =============================================
+   Table Scrolling & Long Text Breakage
+   ============================================= */
+.table-scroll-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.break-all-words {
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+
+.touch-btn {
+  min-height: 44px;
+}
+
