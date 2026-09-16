@@ -20,6 +20,7 @@ from backend.app.db.database import (
     Base,
     get_db_dialect,
     _migrate_sqlite_columns,
+    normalize_database_url,
 )
 from backend.app.models.scan import Scan
 from backend.app.models.user import User
@@ -30,15 +31,25 @@ client = TestClient(app)
 
 
 def test_database_url_normalization():
-    """Verify postgres:// is safely normalized to postgresql:// for SQLAlchemy 2.0."""
+    """Verify postgres:// is safely normalized to postgresql:// and corrupted prefixes are stripped."""
+    # Legacy scheme normalization
     url_legacy = "postgres://user:pass@ep-hostname.us-east-1.aws.neon.tech/phishguard"
-    normalized = url_legacy.replace("postgres://", "postgresql://", 1)
-    assert normalized.startswith("postgresql://")
-    assert "postgres://" not in normalized[:12]
+    assert normalize_database_url(url_legacy).startswith("postgresql://")
 
-    # Test already normalized
+    # Modern postgresql scheme preserved
     url_modern = "postgresql://user:pass@host:5432/phishguard"
-    assert url_modern.startswith("postgresql://")
+    assert normalize_database_url(url_modern) == url_modern
+
+    # Corrupted prefix from concatenated secret key or env var in Render dashboard
+    url_corrupted_1 = "PhishGuardAI_2026_Secure_Key_123456789postgresql://user:pass@host:5432/phishguard"
+    assert normalize_database_url(url_corrupted_1) == "postgresql://user:pass@host:5432/phishguard"
+
+    url_corrupted_2 = "PhishGuardAI_2026_Secure_Key_123456789postgres://user:pass@host:5432/phishguard"
+    assert normalize_database_url(url_corrupted_2) == "postgresql://user:pass@host:5432/phishguard"
+
+    # Completely invalid scheme safely falls back to local SQLite
+    assert normalize_database_url("random_invalid_string") == "sqlite:///./phishguard.db"
+    assert normalize_database_url("") == "sqlite:///./phishguard.db"
 
 
 def test_sqlite_fallback_default():

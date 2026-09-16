@@ -5,27 +5,60 @@ from ..core.config import settings
 
 logger = logging.getLogger(__name__)
 
-# Resolve database connection URL (support Render PostgreSQL and SQLite)
-raw_db_url = (settings.database_url or "sqlite:///./phishguard.db").strip()
-if raw_db_url.startswith("postgres://"):
-    raw_db_url = raw_db_url.replace("postgres://", "postgresql://", 1)
+def normalize_database_url(raw_url: str) -> str:
+    """
+    Sanitize and normalize database connection string:
+    1. Strip whitespace.
+    2. Extract postgresql:// or postgres:// if prepended by accidental env var concatenation.
+    3. Normalize legacy postgres:// to postgresql:// for SQLAlchemy 2.0.
+    4. Fall back to local SQLite if scheme is unknown or invalid.
+    """
+    if not raw_url or not isinstance(raw_url, str):
+        return "sqlite:///./phishguard.db"
 
-if raw_db_url.startswith("sqlite"):
-    engine = create_engine(
-        raw_db_url,
-        connect_args={"check_same_thread": False},
-    )
-else:
-    # Conservative production connection pooling suited for cloud PostgreSQL (e.g. Render / Supabase / Neon)
-    engine = create_engine(
-        raw_db_url,
-        pool_pre_ping=True,
-        pool_size=settings.db_pool_size,
-        max_overflow=settings.db_max_overflow,
-        pool_timeout=settings.db_pool_timeout,
-        pool_recycle=settings.db_pool_recycle,
-    )
+    clean = raw_url.strip()
 
+    if "postgresql://" in clean:
+        clean = clean[clean.find("postgresql://"):]
+    elif "postgres://" in clean:
+        clean = "postgresql://" + clean[clean.find("postgres://") + len("postgres://"):]
+
+    if not clean.startswith("sqlite") and not clean.startswith("postgresql://"):
+        logger.warning(
+            f"Unrecognized database scheme in '{clean[:25]}...'. Defaulting to safe SQLite."
+        )
+        return "sqlite:///./phishguard.db"
+
+    return clean
+
+
+def create_app_engine(db_url: str):
+    """Safely create SQLAlchemy engine with pooling for PostgreSQL or thread-safe config for SQLite."""
+    clean_url = normalize_database_url(db_url)
+    try:
+        if clean_url.startswith("sqlite"):
+            return create_engine(
+                clean_url,
+                connect_args={"check_same_thread": False},
+            )
+        else:
+            return create_engine(
+                clean_url,
+                pool_pre_ping=True,
+                pool_size=settings.db_pool_size,
+                max_overflow=settings.db_max_overflow,
+                pool_timeout=settings.db_pool_timeout,
+                pool_recycle=settings.db_pool_recycle,
+            )
+    except Exception as exc:
+        logger.error(f"Failed to create database engine for '{clean_url[:25]}...': {exc}. Using SQLite fallback.")
+        return create_engine(
+            "sqlite:///./phishguard.db",
+            connect_args={"check_same_thread": False},
+        )
+
+
+engine = create_app_engine(settings.database_url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -79,11 +112,25 @@ def init_db() -> None:
     It will NEVER execute DROP TABLE, DROP DATABASE, or TRUNCATE.
     Existing tables and data are strictly preserved.
     """
+    global engine, SessionLocal
     from ..models import user, scan, ioc, investigation  # noqa: F401 — registers models with SQLAlchemy metadata
 
-    Base.metadata.create_all(bind=engine)
-    _migrate_sqlite_columns()
-    logger.info(f"PhishGuard AI database initialized (dialect={engine.dialect.name})")
+    try:
+        Base.metadata.create_all(bind=engine)
+        _migrate_sqlite_columns()
+        logger.info(f"PhishGuard AI database initialized (dialect={engine.dialect.name})")
+    except Exception as exc:
+        logger.error(f"Database init failed on dialect '{engine.dialect.name}': {exc}")
+        if engine.dialect.name != "sqlite":
+            logger.warning("Falling back to local SQLite database engine...")
+            engine = create_engine(
+                "sqlite:///./phishguard.db",
+                connect_args={"check_same_thread": False},
+            )
+            SessionLocal.configure(bind=engine)
+            Base.metadata.create_all(bind=engine)
+            _migrate_sqlite_columns()
+            logger.info("PhishGuard AI database initialized with SQLite fallback")
 
 
 def get_db():
