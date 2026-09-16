@@ -16,25 +16,34 @@ if raw_db_url.startswith("sqlite"):
         connect_args={"check_same_thread": False},
     )
 else:
+    # Conservative production connection pooling suited for cloud PostgreSQL (e.g. Render / Supabase / Neon)
     engine = create_engine(
         raw_db_url,
         pool_pre_ping=True,
-        pool_size=10,
-        max_overflow=20,
+        pool_size=settings.db_pool_size,
+        max_overflow=settings.db_max_overflow,
+        pool_timeout=settings.db_pool_timeout,
+        pool_recycle=settings.db_pool_recycle,
     )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 
+def get_db_dialect() -> str:
+    """Return the active database dialect name ('postgresql' or 'sqlite')."""
+    return engine.dialect.name
+
+
 def _migrate_sqlite_columns() -> None:
     """
-    Safe SQLite migration: adds new PhishGuard AI 2.0 columns to the existing
+    Safe SQLite migration: adds new PhishGuard AI columns to the existing
     'scans' table without deleting any existing records.
-    SQLite supports ALTER TABLE ... ADD COLUMN but not DROP/MODIFY COLUMN.
+    Only runs when the active database dialect is SQLite.
+    PostgreSQL instances use standard metadata bootstrap and migrations.
     """
-    if not settings.database_url.startswith("sqlite"):
-        return  # Use Alembic for PostgreSQL/MySQL production databases
+    if engine.dialect.name != "sqlite":
+        return
 
     new_columns = [
         ("confidence_score", "REAL"),
@@ -64,11 +73,17 @@ def _migrate_sqlite_columns() -> None:
 
 
 def init_db() -> None:
+    """
+    Bootstrap database schema in an idempotent, non-destructive manner.
+    Uses SQLAlchemy Base.metadata.create_all() which issues 'CREATE TABLE IF NOT EXISTS'.
+    It will NEVER execute DROP TABLE, DROP DATABASE, or TRUNCATE.
+    Existing tables and data are strictly preserved.
+    """
     from ..models import user, scan, ioc, investigation  # noqa: F401 — registers models with SQLAlchemy metadata
 
     Base.metadata.create_all(bind=engine)
     _migrate_sqlite_columns()
-    logger.info("PhishGuard AI database initialized")
+    logger.info(f"PhishGuard AI database initialized (dialect={engine.dialect.name})")
 
 
 def get_db():

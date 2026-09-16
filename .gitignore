@@ -28,6 +28,7 @@ frontend/.env.local
 *.sqlite
 *.sqlite3
 phishguard.db
+backups/
 *.log
 logs/
 cf_backend.log

@@ -43,6 +43,10 @@ class Settings(BaseSettings):
 
     # Database
     database_url: str = "sqlite:///./phishguard.db"
+    db_pool_size: int = 3
+    db_max_overflow: int = 2
+    db_pool_timeout: int = 30
+    db_pool_recycle: int = 1800
 
     # Threat Intelligence Providers (Real external APIs)
     virus_total_api_key: str = ""
