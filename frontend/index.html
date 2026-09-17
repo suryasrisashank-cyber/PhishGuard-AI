@@ -23,14 +23,14 @@
       </div>
       <style>@keyframes pg_spin{to{transform:rotate(360deg)}}</style>
       <script>
-        setTimeout(function() {
+        window.__PG_INIT_TIMER__ = setTimeout(function() {
           var fb = document.getElementById('pg-init-fallback');
           var msg = document.getElementById('pg-init-msg');
           if (fb && msg) {
             msg.innerText = 'Initialization delayed';
             fb.style.display = 'block';
           }
-        }, 5000);
+        }, 10000);
       </script>
     </div>
     <script type="module" src="/src/main.jsx"></script>
