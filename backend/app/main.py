@@ -22,7 +22,7 @@ from .api.routers import (
     alerts,
     campaigns,
 )
-from .db.database import init_db, get_db_dialect
+from .db.database import init_db, get_db_dialect, is_persistent_database
 from .utils.logger import setup_logging
 
 setup_logging()
@@ -121,4 +121,5 @@ def health() -> dict:
         "environment": settings.environment,
         "database": "online",
         "database_type": get_db_dialect(),
+        "persistent_database": is_persistent_database(),
     }

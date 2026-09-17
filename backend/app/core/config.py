@@ -33,7 +33,7 @@ class Settings(BaseSettings):
 
     # Environment & Deployment
     environment: str = "production"
-    is_cloud_deployment: bool = False
+    is_cloud_deployment: bool = is_cloud_environment()
     frontend_origins: str = ""
 
     # Security & Auth

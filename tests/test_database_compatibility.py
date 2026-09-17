@@ -19,8 +19,9 @@ from backend.app.core.config import Settings
 from backend.app.db.database import (
     Base,
     get_db_dialect,
+    is_persistent_database,
     _migrate_sqlite_columns,
-    normalize_database_url,
+    validate_and_normalize_database_url,
 )
 from backend.app.models.scan import Scan
 from backend.app.models.user import User
@@ -31,25 +32,37 @@ client = TestClient(app)
 
 
 def test_database_url_normalization():
-    """Verify postgres:// is safely normalized to postgresql:// and corrupted prefixes are stripped."""
+    """Verify postgres:// is normalized to postgresql:// and malformed prefixes are strictly rejected."""
     # Legacy scheme normalization
     url_legacy = "postgres://user:pass@ep-hostname.us-east-1.aws.neon.tech/phishguard"
-    assert normalize_database_url(url_legacy).startswith("postgresql://")
+    normalized, dialect = validate_and_normalize_database_url(url_legacy)
+    assert normalized.startswith("postgresql://")
+    assert dialect == "postgresql"
 
     # Modern postgresql scheme preserved
     url_modern = "postgresql://user:pass@host:5432/phishguard"
-    assert normalize_database_url(url_modern) == url_modern
+    normalized, dialect = validate_and_normalize_database_url(url_modern)
+    assert normalized == url_modern
+    assert dialect == "postgresql"
 
-    # Corrupted prefix from concatenated secret key or env var in Render dashboard
-    url_corrupted_1 = "PhishGuardAI_2026_Secure_Key_123456789postgresql://user:pass@host:5432/phishguard"
-    assert normalize_database_url(url_corrupted_1) == "postgresql://user:pass@host:5432/phishguard"
+    # Explicit SQLite URL preserved
+    url_sqlite = "sqlite:///./phishguard.db"
+    normalized, dialect = validate_and_normalize_database_url(url_sqlite)
+    assert normalized == url_sqlite
+    assert dialect == "sqlite"
 
-    url_corrupted_2 = "PhishGuardAI_2026_Secure_Key_123456789postgres://user:pass@host:5432/phishguard"
-    assert normalize_database_url(url_corrupted_2) == "postgresql://user:pass@host:5432/phishguard"
+    # Missing / empty string defaults safely to local SQLite
+    assert validate_and_normalize_database_url("")[0] == "sqlite:///./phishguard.db"
+    assert validate_and_normalize_database_url(None)[0] == "sqlite:///./phishguard.db"
 
-    # Completely invalid scheme safely falls back to local SQLite
-    assert normalize_database_url("random_invalid_string") == "sqlite:///./phishguard.db"
-    assert normalize_database_url("") == "sqlite:///./phishguard.db"
+    # Malformed prefix from accidental concatenation must be REJECTED (Phase 6 rule)
+    with pytest.raises(ValueError) as exc1:
+        validate_and_normalize_database_url("SECRETKEYpostgresql://user:pass@host:5432/phishguard")
+    assert "Invalid DATABASE_URL scheme" in str(exc1.value)
+
+    with pytest.raises(ValueError) as exc2:
+        validate_and_normalize_database_url("random_invalid_string")
+    assert "Invalid DATABASE_URL scheme" in str(exc2.value)
 
 
 def test_sqlite_fallback_default():
@@ -109,6 +122,8 @@ def test_health_endpoint_database_type():
     assert data["database"] == "online"
     assert "database_type" in data
     assert data["database_type"] in ["sqlite", "postgresql"]
+    assert "persistent_database" in data
+    assert isinstance(data["persistent_database"], bool)
     
     # Ensure no credentials leaked
     for key, val in data.items():

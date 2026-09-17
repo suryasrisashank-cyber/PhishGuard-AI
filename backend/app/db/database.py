@@ -5,56 +5,68 @@ from ..core.config import settings
 
 logger = logging.getLogger(__name__)
 
-def normalize_database_url(raw_url: str) -> str:
+def validate_and_normalize_database_url(raw_url: str | None) -> tuple[str, str]:
     """
-    Sanitize and normalize database connection string:
-    1. Strip whitespace.
-    2. Extract postgresql:// or postgres:// if prepended by accidental env var concatenation.
-    3. Normalize legacy postgres:// to postgresql:// for SQLAlchemy 2.0.
-    4. Fall back to local SQLite if scheme is unknown or invalid.
+    Validates and normalizes DATABASE_URL according to Phase 6 rules.
+    Returns: (clean_url, dialect)
+
+    Supported schemes:
+      - postgresql://
+      - postgresql+psycopg2://
+      - postgres:// (normalized to postgresql://)
+      - sqlite:///
+
+    Rules:
+    1. If raw_url is missing or empty:
+       -> Defaults to local SQLite: 'sqlite:///./phishguard.db' (dialect: 'sqlite')
+    2. If raw_url is provided:
+       -> Must START with one of the supported schemes.
+       -> Do NOT strip arbitrary prefixes (e.g. BAD: SECRETKEYpostgresql://... must raise ValueError).
+       -> Normalize postgres:// to postgresql:// for SQLAlchemy 2.0.
+       -> If malformed or unsupported scheme, raise ValueError with sanitized error.
+       -> Never silently fall back to SQLite when an invalid production DATABASE_URL was provided.
     """
-    if not raw_url or not isinstance(raw_url, str):
-        return "sqlite:///./phishguard.db"
+    if not raw_url or not isinstance(raw_url, str) or not raw_url.strip():
+        return "sqlite:///./phishguard.db", "sqlite"
 
     clean = raw_url.strip()
 
-    if "postgresql://" in clean:
-        clean = clean[clean.find("postgresql://"):]
-    elif "postgres://" in clean:
-        clean = "postgresql://" + clean[clean.find("postgres://") + len("postgres://"):]
+    # Normalize postgres:// to postgresql://
+    if clean.startswith("postgres://"):
+        clean = "postgresql://" + clean[len("postgres://"):]
 
-    if not clean.startswith("sqlite") and not clean.startswith("postgresql://"):
-        logger.warning(
-            f"Unrecognized database scheme in '{clean[:25]}...'. Defaulting to safe SQLite."
-        )
-        return "sqlite:///./phishguard.db"
+    if clean.startswith("postgresql://") or clean.startswith("postgresql+psycopg2://"):
+        return clean, "postgresql"
 
-    return clean
+    if clean.startswith("sqlite:///"):
+        return clean, "sqlite"
+
+    # Reject malformed strings without silent fallback to prevent production data loss
+    sanitized_prefix = clean[:15]
+    raise ValueError(
+        f"Invalid DATABASE_URL scheme '{sanitized_prefix}...'. Supported schemes: postgresql://, postgresql+psycopg2://, postgres://, sqlite:///"
+    )
 
 
 def create_app_engine(db_url: str):
-    """Safely create SQLAlchemy engine with pooling for PostgreSQL or thread-safe config for SQLite."""
-    clean_url = normalize_database_url(db_url)
-    try:
-        if clean_url.startswith("sqlite"):
-            return create_engine(
-                clean_url,
-                connect_args={"check_same_thread": False},
-            )
-        else:
-            return create_engine(
-                clean_url,
-                pool_pre_ping=True,
-                pool_size=settings.db_pool_size,
-                max_overflow=settings.db_max_overflow,
-                pool_timeout=settings.db_pool_timeout,
-                pool_recycle=settings.db_pool_recycle,
-            )
-    except Exception as exc:
-        logger.error(f"Failed to create database engine for '{clean_url[:25]}...': {exc}. Using SQLite fallback.")
+    """
+    Create SQLAlchemy engine with conservative pooling for PostgreSQL or thread-safe config for SQLite.
+    Fails loudly on malformed DATABASE_URL to avoid silent data loss in production.
+    """
+    clean_url, dialect = validate_and_normalize_database_url(db_url)
+    if dialect == "sqlite":
         return create_engine(
-            "sqlite:///./phishguard.db",
+            clean_url,
             connect_args={"check_same_thread": False},
+        )
+    else:
+        return create_engine(
+            clean_url,
+            pool_pre_ping=True,
+            pool_size=settings.db_pool_size,
+            max_overflow=settings.db_max_overflow,
+            pool_timeout=settings.db_pool_timeout,
+            pool_recycle=settings.db_pool_recycle,
         )
 
 
@@ -105,6 +117,11 @@ def _migrate_sqlite_columns() -> None:
                     logger.warning(f"DB Migration: could not add column '{col_name}': {exc}")
 
 
+def is_persistent_database() -> bool:
+    """Return True if connected to persistent PostgreSQL, False if using ephemeral SQLite."""
+    return engine.dialect.name == "postgresql"
+
+
 def init_db() -> None:
     """
     Bootstrap database schema in an idempotent, non-destructive manner.
@@ -112,25 +129,11 @@ def init_db() -> None:
     It will NEVER execute DROP TABLE, DROP DATABASE, or TRUNCATE.
     Existing tables and data are strictly preserved.
     """
-    global engine, SessionLocal
     from ..models import user, scan, ioc, investigation  # noqa: F401 — registers models with SQLAlchemy metadata
 
-    try:
-        Base.metadata.create_all(bind=engine)
-        _migrate_sqlite_columns()
-        logger.info(f"PhishGuard AI database initialized (dialect={engine.dialect.name})")
-    except Exception as exc:
-        logger.error(f"Database init failed on dialect '{engine.dialect.name}': {exc}")
-        if engine.dialect.name != "sqlite":
-            logger.warning("Falling back to local SQLite database engine...")
-            engine = create_engine(
-                "sqlite:///./phishguard.db",
-                connect_args={"check_same_thread": False},
-            )
-            SessionLocal.configure(bind=engine)
-            Base.metadata.create_all(bind=engine)
-            _migrate_sqlite_columns()
-            logger.info("PhishGuard AI database initialized with SQLite fallback")
+    Base.metadata.create_all(bind=engine)
+    _migrate_sqlite_columns()
+    logger.info(f"PhishGuard AI database initialized (dialect={engine.dialect.name}, persistent={is_persistent_database()})")
 
 
 def get_db():
