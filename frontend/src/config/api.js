@@ -86,7 +86,11 @@ export function resolveApiBaseUrl() {
   }
 
   if (IS_PRODUCTION) {
-    // In production on Vercel: connect directly to live FastAPI backend on Render
+    // When running on Vercel, use relative '/api' to route via Vercel edge proxy rewrites
+    if (isBrowser && window.location.hostname.includes('vercel.app')) {
+      return '/api';
+    }
+    // Direct cloud connection fallback to live FastAPI backend on Render
     return 'https://phishguard-backend-880i.onrender.com/api';
   }
 

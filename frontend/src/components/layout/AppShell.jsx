@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Suspense } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar.jsx';
 import TopBar from './TopBar.jsx';
 import Footer from './Footer.jsx';
