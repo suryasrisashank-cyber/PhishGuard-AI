@@ -29,10 +29,6 @@ setup_logging()
 logger = logging.getLogger(__name__)
 
 
-# Ensure database tables exist on module import (required for TestClient and worker processes)
-init_db()
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()

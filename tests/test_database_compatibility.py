@@ -45,6 +45,12 @@ def test_database_url_normalization():
     assert normalized == url_modern
     assert dialect == "postgresql"
 
+    # Driver variant postgresql+psycopg:// normalized to postgresql://
+    url_psycopg = "postgresql+psycopg://user:pass@host:5432/phishguard"
+    normalized, dialect = validate_and_normalize_database_url(url_psycopg)
+    assert normalized == "postgresql://user:pass@host:5432/phishguard"
+    assert dialect == "postgresql"
+
     # Explicit SQLite URL preserved
     url_sqlite = "sqlite:///./phishguard.db"
     normalized, dialect = validate_and_normalize_database_url(url_sqlite)

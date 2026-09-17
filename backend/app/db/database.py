@@ -31,9 +31,11 @@ def validate_and_normalize_database_url(raw_url: str | None) -> tuple[str, str]:
 
     clean = raw_url.strip()
 
-    # Normalize postgres:// to postgresql://
+    # Normalize legacy or alternative driver schemes to standard postgresql://
     if clean.startswith("postgres://"):
         clean = "postgresql://" + clean[len("postgres://"):]
+    elif clean.startswith("postgresql+psycopg://"):
+        clean = "postgresql://" + clean[len("postgresql+psycopg://"):]
 
     if clean.startswith("postgresql://") or clean.startswith("postgresql+psycopg2://"):
         return clean, "postgresql"
@@ -44,7 +46,7 @@ def validate_and_normalize_database_url(raw_url: str | None) -> tuple[str, str]:
     # Reject malformed strings without silent fallback to prevent production data loss
     sanitized_prefix = clean[:15]
     raise ValueError(
-        f"Invalid DATABASE_URL scheme '{sanitized_prefix}...'. Supported schemes: postgresql://, postgresql+psycopg2://, postgres://, sqlite:///"
+        f"Invalid DATABASE_URL scheme '{sanitized_prefix}...'. Supported schemes: postgresql://, postgresql+psycopg2://, postgresql+psycopg://, postgres://, sqlite:///"
     )
 
 
